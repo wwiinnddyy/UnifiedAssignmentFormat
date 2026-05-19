@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
+coverage/
+.turbo/
+tmp-test.pdf
+
+# C# (future implementations/csharp)
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+.vs/

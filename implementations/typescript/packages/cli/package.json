@@ -1,0 +1,23 @@
+{
+  "name": "uaf",
+  "version": "1.0.0",
+  "description": "CLI for Unified Assignment Format (UAF) v1.0",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "bin": {
+    "uaf": "./dist/cli.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup src/cli.ts --format esm --clean --external @uaf/core --external @uaf/pdf --external commander && tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "@uaf/core": "workspace:*",
+    "@uaf/pdf": "workspace:*",
+    "commander": "^13.1.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
+  }
+}
