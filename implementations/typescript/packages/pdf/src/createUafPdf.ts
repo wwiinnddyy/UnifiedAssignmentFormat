@@ -7,7 +7,7 @@ import {
   validatePayload,
   type UafPayload,
 } from "@uaf/core";
-import { loadChineseFont } from "./font.js";
+import { collectPdfText, loadChineseFontForText } from "./font.js";
 import { renderAssignmentCard } from "./renderCard.js";
 
 export interface CreateUafPdfOptions {
@@ -26,6 +26,8 @@ export async function createUafPdf(
 
   const pdfDoc = await PDFDocument.create();
 
+  const dateDisplay = options.useStandardFont ? "iso" : "zh";
+
   let font;
   let fontBold;
   if (options.useStandardFont) {
@@ -33,14 +35,16 @@ export async function createUafPdf(
     fontBold = font;
   } else {
     pdfDoc.registerFontkit(fontkit);
-    const fontBytes = options.fontBytes ?? (await loadChineseFont());
-    font = await pdfDoc.embedFont(fontBytes);
+    const fontBytes =
+      options.fontBytes ??
+      (await loadChineseFontForText(collectPdfText(validated, dateDisplay)));
+    font = await pdfDoc.embedFont(fontBytes, { subset: true });
     fontBold = font;
   }
 
   const page = pdfDoc.addPage([595.28, 841.89]);
   renderAssignmentCard(page, validated, font, fontBold, {
-    dateDisplay: options.useStandardFont ? "iso" : "zh",
+    dateDisplay,
   });
 
   await pdfDoc.attach(csvBytes, UAF_PAYLOAD_FILENAME, {

@@ -6,7 +6,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "..", "..", "..");
 
 async function main() {
-  const { createUafPdf, loadChineseFont } = await import("../packages/pdf/dist/index.js");
+  const { createUafPdf } = await import("../packages/pdf/dist/index.js");
   const { serializePayload } = await import("../packages/core/dist/index.js");
 
   const payload = {
@@ -21,7 +21,6 @@ async function main() {
   await mkdir(examplesDir, { recursive: true });
   await writeFile(join(examplesDir, "uaf_payload.sample.csv"), csv, "utf-8");
 
-  await loadChineseFont();
   const pdfBytes = await createUafPdf(payload);
   await writeFile(join(examplesDir, "sample-homework.pdf"), pdfBytes);
   console.log(`Generated ${examplesDir}/uaf_payload.sample.csv and sample-homework.pdf`);

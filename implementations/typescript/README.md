@@ -10,7 +10,7 @@ pnpm install
 pnpm build
 ```
 
-中文字体由依赖 `@fontsource/noto-sans-sc` 自动提供，无需额外下载。
+中文字体使用仓库内预构建的 `packages/pdf/assets/NotoSansSC-Core.woff2`（约 36KB），生成时由 pdf-lib **再子集**为页面实际用字；典型 PDF **< 500KB**（样例约 6KB）。展示层为矢量绘制，非截图。重建核心字体：`node packages/pdf/scripts/build-core-font.mjs`（需本地 OTF 或 `@fontsource/noto-sans-sc`）。
 
 ### 依赖与缓存放置 D 盘（推荐）
 

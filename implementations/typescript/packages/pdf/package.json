@@ -12,7 +12,10 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "assets"],
+  "files": [
+    "dist",
+    "assets"
+  ],
   "scripts": {
     "build": "tsup src/index.ts --format esm --clean --external @uaf/core --external pdf-lib --external @pdf-lib/fontkit --external @fontsource/noto-sans-sc && tsc -p tsconfig.build.json",
     "prepublishOnly": "pnpm run build"
@@ -24,6 +27,7 @@
     "pdf-lib": "^1.17.1"
   },
   "devDependencies": {
+    "subset-font": "2.4.0",
     "tsup": "^8.5.0"
   }
 }

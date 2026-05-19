@@ -5,6 +5,8 @@ dist/
 coverage/
 .turbo/
 tmp-test.pdf
+implementations/typescript/packages/pdf/assets/NotoSansSC-Regular.otf
+implementations/typescript/packages/pdf/assets/NotoSansSC-Regular.woff
 
 # C# (future implementations/csharp)
 [Bb]in/

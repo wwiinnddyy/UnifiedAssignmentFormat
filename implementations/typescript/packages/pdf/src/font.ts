@@ -1,41 +1,52 @@
 import { readFile } from "node:fs/promises";
-import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { UafPayload } from "@uaf/core";
 
-const require = createRequire(import.meta.url);
 const packageDir = dirname(fileURLToPath(import.meta.url));
 
-/** Bundled OTF (run scripts/download-font.mjs once) or @fontsource fallback. */
-export function getFontPath(): string {
-  const bundled = join(packageDir, "..", "assets", "NotoSansSC-Regular.otf");
-  return bundled;
-}
+let coreFontBytes: Uint8Array | undefined;
 
-let cachedFont: Uint8Array | undefined;
-
-async function loadFromFontsource(): Promise<Uint8Array> {
-  const pkgDir = dirname(require.resolve("@fontsource/noto-sans-sc/package.json"));
-  const woff = join(pkgDir, "files", "noto-sans-sc-chinese-simplified-400-normal.woff");
-  return new Uint8Array(await readFile(woff));
-}
-
-export async function loadChineseFont(): Promise<Uint8Array> {
-  if (cachedFont) return cachedFont;
-
-  const bundledPath = getFontPath();
-  try {
-    cachedFont = new Uint8Array(await readFile(bundledPath));
-    return cachedFont;
-  } catch {
-    try {
-      cachedFont = await loadFromFontsource();
-      return cachedFont;
-    } catch (cause) {
-      throw new Error(
-        `Chinese font not found. Place NotoSansSC-Regular.otf in packages/pdf/assets/ or install @fontsource/noto-sans-sc.`,
-        { cause },
-      );
-    }
+/** Characters used when rendering a homework card (for font subsetting). */
+export function collectPdfText(payload: UafPayload, dateDisplay: "zh" | "iso" = "zh"): string {
+  const parts = [payload.subject, payload.content, ...payload.tags];
+  if (dateDisplay === "zh") {
+    const d = new Date(payload.date);
+    parts.push(`${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`);
+    parts.push("年月日");
+  } else {
+    parts.push(payload.date);
   }
+  return [...new Set(parts.join(""))].sort().join("");
+}
+
+async function loadCoreFontBytes(): Promise<Uint8Array> {
+  if (coreFontBytes) return coreFontBytes;
+
+  const corePath = join(packageDir, "..", "assets", "NotoSansSC-Core.woff2");
+  try {
+    coreFontBytes = new Uint8Array(await readFile(corePath));
+    return coreFontBytes;
+  } catch {
+    throw new Error(
+      "Chinese font not found. Run: node packages/pdf/scripts/build-core-font.mjs and commit packages/pdf/assets/NotoSansSC-Core.woff2.",
+    );
+  }
+}
+
+/**
+ * Returns the committed core woff2 (~40KB). pdf-lib embeds with `subset: true` to keep only
+ * glyphs drawn on the page. `text` is reserved for future per-payload core builds.
+ */
+export async function loadChineseFontForText(_text: string): Promise<Uint8Array> {
+  return loadCoreFontBytes();
+}
+
+/** @deprecated Use loadChineseFontForText with collectPdfText. */
+export async function loadChineseFont(): Promise<Uint8Array> {
+  return loadCoreFontBytes();
+}
+
+export function getFontPath(): string {
+  return join(packageDir, "..", "assets", "NotoSansSC-Core.woff2");
 }

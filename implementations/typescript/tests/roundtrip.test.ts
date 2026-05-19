@@ -12,6 +12,12 @@ const samplePayload: UafPayload = {
 };
 
 describe("UAF round-trip", () => {
+  it("CJK PDF stays under 500KB with subset core font", async () => {
+    const pdf = await createUafPdf(samplePayload);
+    expect(pdf.length).toBeLessThan(500_000);
+    expect(await extractUafPayload(pdf)).toEqual(samplePayload);
+  });
+
   it("create → extract preserves payload", async () => {
     const asciiPayload = {
       subject: "Math",
