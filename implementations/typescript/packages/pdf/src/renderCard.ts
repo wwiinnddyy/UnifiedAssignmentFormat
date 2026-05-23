@@ -6,6 +6,7 @@ import { drawPill, drawRoundedRect } from "./drawShapes.js";
 export const PAGE_WIDTH = 595.28;
 export const PAGE_HEIGHT = 841.89;
 
+// ── Layout constants ──────────────────────────────────────────────
 const MARGIN = 40;
 const CARD_RADIUS = 16;
 const INNER_PAD = 24;
@@ -13,20 +14,23 @@ const SECTION_GAP = 20;
 const TAG_ROW_GAP = 8;
 const TAG_LINE_STEP = 28;
 
+// ── Color palette (matches visual-spec v1.0) ─────────────────────
 const COLORS = {
-  pageBg: rgb(248 / 255, 250 / 255, 252 / 255),
-  cardBg: rgb(1, 1, 1),
-  shadow: rgb(226 / 255, 232 / 255, 240 / 255),
-  subjectBg: rgb(37 / 255, 99 / 255, 235 / 255),
-  subjectText: rgb(1, 1, 1),
-  dateBg: rgb(241 / 255, 245 / 255, 249 / 255),
-  dateText: rgb(51 / 255, 65 / 255, 85 / 255),
-  content: rgb(15 / 255, 23 / 255, 42 / 255),
-  tagBg: rgb(224 / 255, 231 / 255, 255 / 255),
-  tagText: rgb(55 / 255, 48 / 255, 163 / 255),
-  border: rgb(226 / 255, 232 / 255, 240 / 255),
+  pageBg: rgb(248 / 255, 250 / 255, 252 / 255),       // #F8FAFC
+  cardBg: rgb(255 / 255, 255 / 255, 255 / 255),        // #FFFFFF
+  shadow: rgb(226 / 255, 232 / 255, 240 / 255),        // #E2E8F0
+  subjectBg: rgb(37 / 255, 99 / 255, 235 / 255),       // #2563EB
+  subjectText: rgb(255 / 255, 255 / 255, 255 / 255),   // #FFFFFF
+  dateBg: rgb(241 / 255, 245 / 255, 249 / 255),        // #F1F5F9
+  dateText: rgb(51 / 255, 65 / 255, 85 / 255),         // #334155
+  content: rgb(15 / 255, 23 / 255, 42 / 255),          // #0F172A
+  tagBg: rgb(224 / 255, 231 / 255, 255 / 255),         // #E0E7FF
+  tagText: rgb(55 / 255, 48 / 255, 163 / 255),         // #3730A3
+  border: rgb(226 / 255, 232 / 255, 240 / 255),        // #E2E8F0
+  divider: rgb(226 / 255, 232 / 255, 240 / 255),       // #E2E8F0
 };
 
+// ── Font size ladder for content auto-fit ─────────────────────────
 const FONT_SIZES = [22, 18, 16, 14];
 
 const SUBJECT_FONT = 14;
@@ -39,9 +43,37 @@ const TAG_FONT = 11;
 const TAG_PAD_X = 10;
 const TAG_PAD_Y = 5;
 
+// ── Helpers ───────────────────────────────────────────────────────
+
 function formatDateDisplay(isoDate: string): string {
   const d = new Date(isoDate);
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+}
+
+/**
+ * Calculate the baseline y-coordinate for text visually centered in a box.
+ *
+ * PDF drawText uses the baseline as the y-coordinate. The font's visual height
+ * at a given size (from descender to ascender) is returned by `heightAtSize`.
+ * The baseline sits roughly 80% up from the bottom of that visual height for
+ * CJK fonts. We use a fixed ratio to avoid depending on internal font metrics
+ * that pdf-lib's PDFFont type does not expose.
+ *
+ * @param boxBottom  The y-coordinate of the box's bottom edge
+ * @param boxH       The box height
+ * @param font       The PDFFont (used for heightAtSize)
+ * @param fontSize   The font size
+ */
+function textBaselineInBox(
+  boxBottom: number,
+  boxH: number,
+  font: PDFFont,
+  fontSize: number,
+): number {
+  const fontH = font.heightAtSize(fontSize);
+  // Approximate baseline offset: ~80% of font height from the visual bottom
+  const baselineOffset = fontH * 0.8;
+  return boxBottom + (boxH - fontH) / 2 + baselineOffset;
 }
 
 function wrapText(text: string, font: PDFFont, fontSize: number, maxWidth: number): string[] {
@@ -65,6 +97,8 @@ function wrapText(text: string, font: PDFFont, fontSize: number, maxWidth: numbe
   if (current) lines.push(current);
   return lines.length > 0 ? lines : [""];
 }
+
+// ── Tag chip layout ───────────────────────────────────────────────
 
 interface TagChip {
   label: string;
@@ -96,6 +130,8 @@ function layoutTags(tags: string[], font: PDFFont, maxWidth: number): { chips: T
   return { chips, height: rows * TAG_LINE_STEP };
 }
 
+// ── Card layout calculation ───────────────────────────────────────
+
 interface CardLayout {
   cardX: number;
   cardW: number;
@@ -119,12 +155,14 @@ function layoutCard(payload: UafPayload, font: PDFFont, dateLabel: string): Card
   const dateH = DATE_FONT + DATE_PAD_Y * 2;
   const headerH = Math.max(subjectH, dateH);
 
+  // Maximum content area height: page minus all fixed elements
   const maxContentHeight =
     PAGE_HEIGHT - MARGIN * 2 - INNER_PAD * 2 - headerH - SECTION_GAP * 2 - TAG_LINE_STEP * 2 - 40;
 
   let contentFontSize = FONT_SIZES[0];
   let contentLines: string[] = [];
 
+  // Auto-fit: try smaller font sizes until content fits
   for (const size of FONT_SIZES) {
     contentFontSize = size;
     contentLines = wrapText(payload.content, font, size, contentWidth);
@@ -168,6 +206,8 @@ function layoutCard(payload: UafPayload, font: PDFFont, dateLabel: string): Card
   };
 }
 
+// ── Main render function ──────────────────────────────────────────
+
 export function renderAssignmentCard(
   page: PDFPage,
   payload: UafPayload,
@@ -178,6 +218,7 @@ export function renderAssignmentCard(
   const dateLabel =
     options.dateDisplay === "iso" ? payload.date : formatDateDisplay(payload.date);
 
+  // ── Page background ──
   page.drawRectangle({
     x: 0,
     y: 0,
@@ -189,6 +230,7 @@ export function renderAssignmentCard(
   const layout = layoutCard(payload, font, dateLabel);
   const cardBottom = layout.cardTop - layout.cardHeight;
 
+  // ── Card shadow (offset 2pt down-left) ──
   drawRoundedRect(
     page,
     layout.cardX + 2,
@@ -199,6 +241,7 @@ export function renderAssignmentCard(
     COLORS.shadow,
   );
 
+  // ── Card background + border ──
   drawRoundedRect(
     page,
     layout.cardX,
@@ -214,6 +257,7 @@ export function renderAssignmentCard(
   const innerRight = layout.cardX + layout.cardW - INNER_PAD;
   let cursorY = layout.cardTop - INNER_PAD;
 
+  // ── Header row: subject pill (left) + date pill (right) ──
   const subjectLabel = payload.subject;
   const subjectTextW = fontBold.widthOfTextAtSize(subjectLabel, SUBJECT_FONT);
   const subjectW = subjectTextW + SUBJECT_PAD_X * 2;
@@ -223,7 +267,7 @@ export function renderAssignmentCard(
   drawPill(page, innerLeft, subjectY, subjectW, subjectH, COLORS.subjectBg);
   page.drawText(subjectLabel, {
     x: innerLeft + SUBJECT_PAD_X,
-    y: subjectY + SUBJECT_PAD_Y,
+    y: textBaselineInBox(subjectY, subjectH, fontBold, SUBJECT_FONT),
     size: SUBJECT_FONT,
     font: fontBold,
     color: COLORS.subjectText,
@@ -238,30 +282,40 @@ export function renderAssignmentCard(
   drawPill(page, dateX, dateY, dateW, dateH, COLORS.dateBg);
   page.drawText(dateLabel, {
     x: dateX + DATE_PAD_X,
-    y: dateY + DATE_PAD_Y,
+    y: textBaselineInBox(dateY, dateH, font, DATE_FONT),
     size: DATE_FONT,
     font,
     color: COLORS.dateText,
   });
 
+  // ── Divider line between header and content ──
+  const dividerY = subjectY - SECTION_GAP / 2;
+  page.drawLine({
+    start: { x: innerLeft, y: dividerY },
+    end: { x: innerRight, y: dividerY },
+    thickness: 0.75,
+    color: COLORS.divider,
+  });
+
   cursorY = subjectY - SECTION_GAP;
 
+  // ── Content text area ──
   let textY = cursorY;
   for (const line of layout.contentLines) {
-    textY -= layout.contentFontSize;
+    textY -= layout.lineHeight;
     page.drawText(line, {
       x: innerLeft,
-      y: textY,
+      y: textY + (layout.lineHeight - layout.contentFontSize) / 2,
       size: layout.contentFontSize,
       font,
       color: COLORS.content,
     });
-    textY -= layout.lineHeight - layout.contentFontSize;
   }
 
+  // ── Tag chips ──
   if (layout.tagChips.length > 0) {
     let tagX = innerLeft;
-    let tagY = textY - SECTION_GAP - layout.tagChips[0].h;
+    let tagY = textY - SECTION_GAP;
     let row = 0;
 
     for (const chip of layout.tagChips) {
@@ -272,10 +326,11 @@ export function renderAssignmentCard(
         tagY -= TAG_LINE_STEP;
       }
 
-      drawPill(page, tagX, tagY, chip.w, chip.h, COLORS.tagBg);
+      const chipBottom = tagY - chip.h;
+      drawPill(page, tagX, chipBottom, chip.w, chip.h, COLORS.tagBg);
       page.drawText(chip.label, {
         x: tagX + TAG_PAD_X,
-        y: tagY + TAG_PAD_Y,
+        y: textBaselineInBox(chipBottom, chip.h, font, TAG_FONT),
         size: TAG_FONT,
         font,
         color: COLORS.tagText,
