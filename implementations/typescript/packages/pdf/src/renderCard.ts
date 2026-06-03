@@ -28,6 +28,7 @@ const COLORS = {
   tagText: rgb(55 / 255, 48 / 255, 163 / 255),         // #3730A3
   border: rgb(226 / 255, 232 / 255, 240 / 255),        // #E2E8F0
   divider: rgb(226 / 255, 232 / 255, 240 / 255),       // #E2E8F0
+  watermark: rgb(148 / 255, 163 / 255, 184 / 255),     // #94A3B8
 };
 
 // ── Font size ladder for content auto-fit ─────────────────────────
@@ -213,7 +214,7 @@ export function renderAssignmentCard(
   payload: UafPayload,
   font: PDFFont,
   fontBold: PDFFont,
-  options: { dateDisplay?: "zh" | "iso" } = {},
+  options: { dateDisplay?: "zh" | "iso"; canRenderCjk?: boolean } = {},
 ): void {
   const dateLabel =
     options.dateDisplay === "iso" ? payload.date : formatDateDisplay(payload.date);
@@ -339,4 +340,21 @@ export function renderAssignmentCard(
       tagX += chip.w + TAG_ROW_GAP;
     }
   }
+
+  // ── Watermark (visual-spec §7) ──
+  const watermarkFontSize = 10;
+  const watermarkText =
+    options.canRenderCjk === false
+      ? "Exported with UAF"
+      : "使用 UAF 导出";
+  const watermarkW = font.widthOfTextAtSize(watermarkText, watermarkFontSize);
+  const watermarkX = PAGE_WIDTH - MARGIN;
+  const watermarkY = MARGIN;
+  page.drawText(watermarkText, {
+    x: watermarkX - watermarkW,
+    y: watermarkY,
+    size: watermarkFontSize,
+    font,
+    color: COLORS.watermark,
+  });
 }

@@ -57,6 +57,11 @@ Catalog → /Names → /EmbeddedFiles → 名称树 → FileSpec(UF: uaf_payload
 
 单页电子看板卡片版式见 [visual-spec.md](./visual-spec.md)。
 
+视觉规范 additionally 包含：
+
+- **PDF 导出水印**：页面右下角固定位置须包含标识文本（如「使用 UAF 导出」），表明该 PDF 由 UAF 标准生成。详见 [visual-spec.md §7 PDF 导出水印](./visual-spec.md#7-pdf-导出水印)。
+- 水印是 v1.0 合规性检查的可选项，建议解析器在验证时给出提示。
+
 ## 7. 平台交换 Pipeline
 
 1. 用户在网页/APP 中上传 `.pdf`
@@ -80,10 +85,10 @@ Catalog → /Names → /EmbeddedFiles → 名称树 → FileSpec(UF: uaf_payload
 
 语言相关实现位于 [`implementations/`](../implementations/)：
 
-| 语言 | 目录 | 状态 |
-|------|------|------|
-| TypeScript / Node | [`implementations/typescript/`](../implementations/typescript/) | 已实现（`@uaf/core`、`@uaf/pdf`、`uaf` CLI） |
-| C# | [`implementations/csharp/`](../implementations/csharp/) | 规划中 |
+| 语言 | 目录 | 状态 | 方法 |
+|------|------|------|------|
+| TypeScript / Node | [`implementations/typescript/`](../implementations/typescript/) | 已实现 | 原生矢量绘制（`@uaf/pdf`）、HTML 渲染（`@uaf/html`）、`uaf` CLI |
+| C# | [`implementations/csharp/`](../implementations/csharp/) | 规划中 | — |
 
 共享验收样例：[`examples/`](../examples/)。
 

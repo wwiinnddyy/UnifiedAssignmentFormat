@@ -1,0 +1,32 @@
+{
+  "name": "@uaf/html",
+  "version": "1.0.0",
+  "description": "UAF v1.0 HTML renderer and HTML-to-PDF generation",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --clean --external @uaf/core --external pdf-lib --external @pdf-lib/fontkit && tsc -p tsconfig.build.json",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "@uaf/core": "workspace:*",
+    "pdf-lib": "^1.17.1"
+  },
+  "optionalDependencies": {
+    "puppeteer": "^24.0.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
+  }
+}

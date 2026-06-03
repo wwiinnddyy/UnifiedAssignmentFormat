@@ -35,8 +35,8 @@ async function loadCoreFontBytes(): Promise<Uint8Array> {
 }
 
 /**
- * Returns the committed core woff2 (~40KB). pdf-lib embeds with `subset: true` to keep only
- * glyphs drawn on the page. `text` is reserved for future per-payload core builds.
+ * Returns the committed core woff2 (~40KB). pdf-lib embeds the full font directly.
+ * `text` is reserved for future per-payload core builds.
  */
 export async function loadChineseFontForText(_text: string): Promise<Uint8Array> {
   return loadCoreFontBytes();

@@ -38,13 +38,14 @@ export async function createUafPdf(
     const fontBytes =
       options.fontBytes ??
       (await loadChineseFontForText(collectPdfText(validated, dateDisplay)));
-    font = await pdfDoc.embedFont(fontBytes, { subset: true });
+    font = await pdfDoc.embedFont(fontBytes);
     fontBold = font;
   }
 
   const page = pdfDoc.addPage([595.28, 841.89]);
   renderAssignmentCard(page, validated, font, fontBold, {
     dateDisplay,
+    canRenderCjk: !options.useStandardFont,
   });
 
   await pdfDoc.attach(csvBytes, UAF_PAYLOAD_FILENAME, {
