@@ -9,11 +9,12 @@
   },
   "files": ["dist"],
   "scripts": {
-    "build": "tsup src/cli.ts --format esm --clean --external @uaf/core --external @uaf/pdf --external commander && tsc -p tsconfig.build.json",
+    "build": "tsup src/cli.ts --format esm --clean --external @uaf/core --external @uaf/html --external @uaf/pdf --external commander && tsc -p tsconfig.build.json",
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
     "@uaf/core": "workspace:*",
+    "@uaf/html": "workspace:*",
     "@uaf/pdf": "workspace:*",
     "commander": "^13.1.0"
   },

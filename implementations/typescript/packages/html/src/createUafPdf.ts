@@ -18,11 +18,10 @@ export interface CreateUafPdfFromHtmlOptions
  * Steps:
  * 1. Validate the payload.
  * 2. Render the payload as a self-contained HTML document.
- * 3. Convert the HTML to PDF using Puppeteer (optional dependency).
+ * 3. Convert the HTML to PDF using Puppeteer or a local Chrome/Edge executable.
  * 4. Embed the CSV payload as an attached file.
  *
- * Puppeteer must be installed for the PDF conversion step. If you only need
- * the HTML string, use {@link renderUafHtml} directly.
+ * If you only need the HTML string, use {@link renderUafHtml} directly.
  */
 export async function createUafPdfFromHtml(
   payload: UafPayload,
@@ -36,6 +35,10 @@ export async function createUafPdfFromHtml(
   const pdfBytes = await htmlToPdf(html, options);
 
   const pdfDoc = await PDFDocument.load(pdfBytes);
+  const pageCount = pdfDoc.getPageCount();
+  if (pageCount !== 1) {
+    throw new Error(`UAF PDF must contain exactly one page; HTML renderer produced ${pageCount}`);
+  }
 
   await pdfDoc.attach(csvBytes, UAF_PAYLOAD_FILENAME, {
     mimeType: "text/csv",

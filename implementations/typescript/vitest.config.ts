@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@uaf/core": resolve(__dirname, "packages/core/src/index.ts"),
+      "@uaf/html": resolve(__dirname, "packages/html/src/index.ts"),
       "@uaf/pdf": resolve(__dirname, "packages/pdf/src/index.ts"),
     },
   },

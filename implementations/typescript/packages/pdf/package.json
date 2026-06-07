@@ -17,17 +17,17 @@
     "assets"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm --clean --external @uaf/core --external pdf-lib --external @pdf-lib/fontkit --external @fontsource/noto-sans-sc && tsc -p tsconfig.build.json",
+    "build": "tsup src/index.ts --format esm --clean --external @uaf/core --external pdf-lib --external @pdf-lib/fontkit --external @fontsource/noto-sans-sc --external subset-font && tsc -p tsconfig.build.json",
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
     "@fontsource/noto-sans-sc": "^5.2.5",
     "@pdf-lib/fontkit": "^1.1.1",
     "@uaf/core": "workspace:*",
-    "pdf-lib": "^1.17.1"
+    "pdf-lib": "^1.17.1",
+    "subset-font": "2.4.0"
   },
   "devDependencies": {
-    "subset-font": "2.4.0",
     "tsup": "^8.5.0"
   }
 }

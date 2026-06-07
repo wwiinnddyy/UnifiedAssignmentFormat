@@ -1,4 +1,4 @@
-import type { UafPayload } from "@uaf/core";
+import { serializePayload, type UafPayload } from "@uaf/core";
 
 export interface RenderHtmlOptions {
   /** Display date in Chinese ("YYYY年M月D日") or keep ISO format. Defaults to "zh". */
@@ -55,6 +55,7 @@ export function renderUafHtml(payload: UafPayload, options?: RenderHtmlOptions):
   const date = escapeHtml(formatDate(payload.date, dateDisplay));
   const content = renderContent(payload.content);
   const tagsHtml = renderTags(payload.tags);
+  const payloadCsv = escapeHtml(serializePayload(payload));
 
   return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -186,6 +187,7 @@ body {
   ${tagsHtml}
 </div>
 <div class="watermark">使用 UAF v1.0 导出</div>
+<template id="uaf-payload-csv" data-filename="uaf_payload.csv">${payloadCsv}</template>
 </body>
 </html>`;
 }

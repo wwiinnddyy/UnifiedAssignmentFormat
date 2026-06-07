@@ -35,8 +35,11 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      - name: Generate sample PDF
+      - name: Generate sample artifacts
         run: pnpm run generate:sample
+
+      - name: Verify sample artifacts
+        run: pnpm run verify:sample
 
       - name: Test
         run: pnpm test

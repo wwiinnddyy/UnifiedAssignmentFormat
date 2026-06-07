@@ -4,11 +4,11 @@
 
 ## 1. 概述
 
-HTML 渲染器是 UAF 的第三种 PDF 导出方法：
+HTML 渲染器是 TypeScript 参考实现的默认 PDF 导出路径，也是 UAF 的可预览展示中间层：
 
 1. 将 [`UafPayload`](./csv-schema.md#6-逻辑层映射) 渲染为**自包含的 HTML 文档**（含内联 CSS）。
 2. 用户可直接在浏览器中打开 HTML 并打印为 PDF。
-3. 可选地，通过 Puppeteer（无头 Chromium）自动将 HTML 转为 PDF，并用 `pdf-lib` 嵌入 `uaf_payload.csv` 附件。
+3. 可选地，通过 Puppeteer（无头 Chromium）或系统 Chrome/Edge 的 headless print-to-pdf 自动将 HTML 转为 PDF，并用 `pdf-lib` 嵌入 `uaf_payload.csv` 附件。
 
 此方法的优势：
 - 依赖浏览器的排版引擎，天然支持复杂文本布局与换行。
@@ -22,6 +22,9 @@ HTML 渲染器是 UAF 的第三种 PDF 导出方法：
 - 必须是完整的、有效的 **HTML5 文档**（含 `<!DOCTYPE html>`）。
 - 所有 CSS 必须内联在 `<style>` 标签中，**不得引用外部样式表**。
 - 不得依赖外部图像或字体文件（使用系统字体栈）。
+- 应在 `<body>` 末尾包含一个 inert 的 `<template id="uaf-payload-csv" data-filename="uaf_payload.csv">`，其文本内容为 HTML 转义后的标准 UAF CSV payload，便于 HTML 展示文件保持自包含与可审计。
+- HTML 解析器可从该 template 中解码 CSV，并按标准 CSV Schema 恢复 `UafPayload`。
+- HTML 校验器应验证 template 存在、CSV 可解析且 payload 满足标准 Schema。
 
 ### 2.2 页面尺寸
 
@@ -176,12 +179,13 @@ font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
 
 ## 6. HTML → PDF 自动化转换
 
-`@uaf/html` 包提供可选的自动化转换函数 `htmlToPdf()`，使用 **Puppeteer**（无头 Chromium）。
+`@uaf/html` 包提供自动化转换函数 `htmlToPdf()`，优先使用 **Puppeteer**（无头 Chromium），未安装 Puppeteer 时回退到系统 Chrome/Edge 的 headless print-to-pdf。
 
 ### 6.1 依赖声明
 
 - Puppeteer 声明为 `optionalDependency`。
-- 若未安装，调用 `htmlToPdf()` 时抛出错误，提示用户安装。
+- 若未安装，运行时应查找 `UAF_CHROMIUM_EXECUTABLE`、`PUPPETEER_EXECUTABLE_PATH`、`CHROME_PATH` 或常见系统 Chrome/Edge 路径。
+- 若 Puppeteer 和系统浏览器均不可用，调用 `htmlToPdf()` 时抛出错误，提示用户安装 Puppeteer、设置浏览器路径或使用原生 PDF renderer。
 
 ### 6.2 转换参数
 
@@ -191,6 +195,10 @@ font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
 | `height` | `"297mm"` | 纸张高度 |
 | `printBackground` | `true` | 是否打印背景图形 |
 | `browser` | 新实例 | 可复用的 Puppeteer `Browser` 实例 |
+| `launchOptions` | `{}` | 创建 Puppeteer 浏览器实例时传入的启动参数 |
+| `waitUntil` | `"networkidle0"` | 打印前等待页面达到的加载状态 |
+| `browserExecutablePath` | 自动查找 | Chrome/Edge 可执行文件路径，用于无 Puppeteer 的 headless print-to-pdf |
+| `browserArgs` | `[]` | 传给浏览器可执行文件的额外参数 |
 
 ### 6.3 完整 Pipeline
 
@@ -200,8 +208,9 @@ font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
 2. 调用 `serializePayload(validated)` 生成 CSV 字符串。
 3. 调用 `renderUafHtml(validated)` 生成 HTML 字符串。
 4. 调用 `htmlToPdf(html)` 将 HTML 转为 PDF 字节数组。
-5. 用 `pdf-lib` 加载 PDF，调用 `PDFDocument.attach()` 嵌入 CSV。
-6. 返回 `pdfDoc.save()` 的字节数组。
+5. 用 `pdf-lib` 加载 PDF，并验证页数必须为 1。
+6. 调用 `PDFDocument.attach()` 嵌入 CSV。
+7. 返回 `pdfDoc.save()` 的字节数组。
 
 ## 7. 无障碍与兼容
 
@@ -216,6 +225,6 @@ font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
 | 排版引擎 | pdf-lib 手动计算 | 浏览器/Chromium 自动排版 |
 | 字体 | 需嵌入 Noto Sans SC 子集 | 系统字体栈，无需嵌入 |
 | 文件体积 | < 500 KB（含子集字体） | 较小（仅 PDF 本身，无嵌入字体） |
-| 依赖 | pdf-lib + fontkit | pdf-lib + 可选 Puppeteer |
-| 离线能力 | 完全离线 | Puppeteer 需下载 Chromium |
+| 依赖 | pdf-lib + fontkit | pdf-lib + 可选 Puppeteer 或系统 Chrome/Edge |
+| 离线能力 | 完全离线 | 可复用已安装浏览器；仅 Puppeteer 自带 Chromium 需要下载 |
 | 自定义 | 需改代码 | 可手写调整 HTML/CSS 后打印 |

@@ -1,6 +1,9 @@
 /**
- * Builds packages/pdf/assets/NotoSansSC-Core.woff2 (committed, ~20–80KB).
- * Requires local NotoSansSC-Regular.otf OR @fontsource/noto-sans-sc slices.
+ * Builds packages/pdf/assets/NotoSansSC-Core.ttf for quick local experiments.
+ *
+ * Runtime PDF generation uses NotoSansSC-Regular.otf and creates an SFNT subset
+ * for each payload. Do not use WOFF/WOFF2 for pdf-lib /FontFile2 embedding:
+ * real PDF renderers may display blank or replacement glyphs.
  */
 import subsetFont from "subset-font";
 import { readFile, writeFile, mkdir } from "fs/promises";
@@ -11,10 +14,10 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const here = dirname(fileURLToPath(import.meta.url));
 const assetsDir = join(here, "../assets");
-const outPath = join(assetsDir, "NotoSansSC-Core.woff2");
+const outPath = join(assetsDir, "NotoSansSC-Core.ttf");
 
 const SAMPLE =
-  "数学完成课本第45页第1、2题，请拍照上传。必做几何重难点语文英语物理化学生物历史地理政治音乐美术体育信息技术科学实验阅读写作背诵默写订正家长签字";
+  "数学完成课本第45页第1、2题，请拍照上传。必做几何重难点语文英语物理化学生物历史地理政治音乐美术体育信息技术科学实验阅读写作背诵默写订正家长签字使用 UAF 导出未标记";
 const CORE_EXTRA =
   '0123456789年月日，。、；：？！""\'\'（）【】《》…—·!?.,;:\'"-/\\';
 
@@ -63,7 +66,7 @@ async function subsetFromFontsource() {
   for (const i of [...indices].sort((a, b) => a - b)) {
     const path = join(pkgDir, "files", `noto-sans-sc-${i}-400-normal.woff2`);
     const buf = await readFile(path);
-    parts.push(await subsetFont(buf, text, { targetFormat: "woff2" }));
+    parts.push(await subsetFont(buf, text, { targetFormat: "sfnt" }));
   }
 
   if (parts.length === 1) return parts[0];
@@ -79,7 +82,7 @@ async function main() {
   const otfPath = join(assetsDir, "NotoSansSC-Regular.otf");
   try {
     const otf = await readFile(otfPath);
-    merged = await subsetFont(otf, text, { targetFormat: "woff2" });
+    merged = await subsetFont(otf, text, { targetFormat: "sfnt" });
     console.log("Built from OTF");
   } catch {
     merged = await subsetFromFontsource();
