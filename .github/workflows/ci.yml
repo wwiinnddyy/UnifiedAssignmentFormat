@@ -41,5 +41,11 @@ jobs:
       - name: Verify sample artifacts
         run: pnpm run verify:sample
 
+      - name: Package sample artifact set
+        run: pnpm run package:sample
+
+      - name: Read sample artifact set
+        run: pnpm run read:sample-package
+
       - name: Test
         run: pnpm test

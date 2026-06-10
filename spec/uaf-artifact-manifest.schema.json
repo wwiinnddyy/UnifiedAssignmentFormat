@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://uaf.local/spec/uaf-artifact-manifest.schema.json",
+  "title": "UAF Artifact Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "packageKind",
+    "uafVersion",
+    "createdAt",
+    "entrypoints",
+    "artifacts",
+    "pipeline"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "packageKind": {
+      "const": "uaf-artifact-set"
+    },
+    "uafVersion": {
+      "const": "1.0"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "entrypoints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["payload", "display", "exchange"],
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "display": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "exchange": {
+          "$ref": "#/$defs/relativePath"
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    },
+    "pipeline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["renderer", "printEngine", "payloadAttachment"],
+      "properties": {
+        "renderer": {
+          "enum": ["html-to-pdf", "native-pdf"]
+        },
+        "printEngine": {
+          "enum": ["browser-print", "pdf-lib", "dotnet-native"]
+        },
+        "payloadAttachment": {
+          "const": "uaf_payload.csv"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "path", "mediaType", "bytes", "sha256"],
+      "properties": {
+        "role": {
+          "enum": ["payload.csv", "display.html", "exchange.pdf", "supporting"]
+        },
+        "path": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "mediaType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?![A-Za-z]:)(?!/)(?!.*://)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+    }
+  }
+}

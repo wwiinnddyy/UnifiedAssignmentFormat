@@ -32,6 +32,13 @@ UAF（Unified Assignment Format）是一种面向家校作业场景的文件交�
 - **机器层数据**：`<template id="uaf-payload-csv" data-filename="uaf_payload.csv">` 中携带 HTML 转义后的标准 CSV payload
 - **用途**：浏览器预览、人工打印、自动 HTML-to-PDF 渲染、展示层调试
 
+可选工程整合包：
+
+- **目录扩展名**：`.uaf`
+- **压缩包扩展名**：`.uaf.zip`
+- **入口文件**：`uaf-manifest.json`
+- **用途**：把 `uaf_payload.csv`、`display.html`、`document.pdf` 作为一个可校验 artifact set 交付给程序、CI、归档系统或跨语言实现测试。详见 [file-integration-standard.md](./file-integration-standard.md)。
+
 ## 4. 数据 Schema
 
 UAF v1.0 仅包含四个扁平字段，详见 [csv-schema.md](./csv-schema.md)：

@@ -1,0 +1,40 @@
+{
+  "$schema": "../../spec/uaf-artifact-manifest.schema.json",
+  "schemaVersion": "1.0",
+  "packageKind": "uaf-artifact-set",
+  "uafVersion": "1.0",
+  "createdAt": "2026-06-07T17:15:52.791Z",
+  "entrypoints": {
+    "payload": "uaf_payload.csv",
+    "display": "display.html",
+    "exchange": "document.pdf"
+  },
+  "artifacts": [
+    {
+      "role": "payload.csv",
+      "path": "uaf_payload.csv",
+      "mediaType": "text/csv; charset=utf-8",
+      "bytes": 121,
+      "sha256": "a93ee7acc3399c57692e6554c2ec542bea43e845187a5c210937e6ccb11b744c"
+    },
+    {
+      "role": "display.html",
+      "path": "display.html",
+      "mediaType": "text/html; charset=utf-8",
+      "bytes": 2590,
+      "sha256": "3f8df4f25dddccf649f102d05f629f81b9b3293df24f6527c99018e88ac206e8"
+    },
+    {
+      "role": "exchange.pdf",
+      "path": "document.pdf",
+      "mediaType": "application/pdf",
+      "bytes": 53382,
+      "sha256": "261e4ce17d078daff3d485abbf6fdf8db2cc1324cbd79ab839040efe4dce9686"
+    }
+  ],
+  "pipeline": {
+    "renderer": "html-to-pdf",
+    "printEngine": "browser-print",
+    "payloadAttachment": "uaf_payload.csv"
+  }
+}

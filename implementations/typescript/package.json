@@ -9,7 +9,9 @@
     "test:watch": "vitest",
     "lint": "tsc --noEmit",
     "generate:sample": "node scripts/generate-sample.mjs",
-    "verify:sample": "node scripts/verify-sample.mjs"
+    "verify:sample": "node scripts/verify-sample.mjs",
+    "package:sample": "node scripts/package-sample.mjs",
+    "read:sample-package": "node scripts/read-package.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.15.21",

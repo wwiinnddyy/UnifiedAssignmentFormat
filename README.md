@@ -9,6 +9,8 @@ UAF v1.0 将作业信息编码为 **单页 PDF 作业卡片**（人类可读）�
 - [UAF v1.0 总规范](./spec/uaf-v1.0.md)
 - [CSV Schema](./spec/csv-schema.md)
 - [视觉规范](./spec/visual-spec.md)
+- [文件整合标准](./spec/file-integration-standard.md)
+- [Artifact Manifest JSON Schema](./spec/uaf-artifact-manifest.schema.json)
 
 ## 共享样例
 
@@ -33,6 +35,9 @@ pnpm install
 pnpm build
 pnpm exec uaf render-html -o homework.html --from ../../examples/uaf_payload.sample.csv
 pnpm exec uaf create -o homework.pdf --from ../../examples/uaf_payload.sample.csv
+pnpm run generate:sample
+pnpm run package:sample
+pnpm run read:sample-package
 ```
 
 安装、CLI、SDK 接入与 npm 发布说明见 [implementations/typescript/README.md](./implementations/typescript/README.md)。

@@ -97,6 +97,8 @@ const payloadFromHtml = extractUafPayloadFromHtml(html);
 pnpm test
 pnpm run generate:sample   # 写入仓库根 examples/ 下的 CSV、HTML、PDF
 pnpm run verify:sample     # 校验 CSV、HTML、PDF 三者 payload 一致
+pnpm run package:sample    # 写入 examples/sample-homework.uaf/ 整合包
+pnpm run read:sample-package # 按 manifest 读取整合包并验 hash/payload
 ```
 
 若本机以 `pnpm install --no-optional` 安装依赖，HTML-to-PDF 会尝试回退到系统 Chrome/Edge；单元测试通过注入浏览器对象和伪浏览器可执行文件覆盖打印管线，不需要本地下载 Chromium。
