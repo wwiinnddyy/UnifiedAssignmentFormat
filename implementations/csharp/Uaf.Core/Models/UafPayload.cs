@@ -1,12 +1,17 @@
+using CsvHelper.Configuration.Attributes;
 using Uaf.Core.Helpers;
 
 namespace Uaf.Core.Models;
 
 public sealed record UafPayload
 {
+    [Name("subject")]
     public required string Subject { get; init; }
+    [Name("date")]
     public required string Date { get; init; }
+    [Name("date")]
     public required string Content { get; set; }
+    [Name("tags")]
     public required IReadOnlyList<string> Tags { get; set; }
 
     public UafPayload()
