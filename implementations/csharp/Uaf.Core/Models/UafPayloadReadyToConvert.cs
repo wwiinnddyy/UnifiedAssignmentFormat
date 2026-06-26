@@ -1,21 +1,21 @@
+using CsvHelper.Configuration.Attributes;
+
 namespace Uaf.Core.Models;
 
 internal class UafPayloadReadyToConvert
 {
+    [Name("subject")]
     public string Subject { get; set; }
+    [Name("date")]
     public string Date { get; set; }
+    [Name("content")]
     public string Content { get; set; }
+    [Name("tags")]
     public string Tags { get; set; }
 
     public static UafPayload ConvertToFinal(UafPayloadReadyToConvert rtc)
     {
-        return new UafPayload()
-        {
-            Subject = rtc.Subject,
-            Date = rtc.Date,
-            Content = rtc.Content,
-            Tags = rtc.Tags.Split(';').AsReadOnly(),
-        };
+        return new UafPayload(rtc.Subject, rtc.Date, rtc.Content, rtc.Tags.Split(';', StringSplitOptions.RemoveEmptyEntries).AsReadOnly());
     }
 
     public static UafPayloadReadyToConvert ConvertToRtc(UafPayload payload)
