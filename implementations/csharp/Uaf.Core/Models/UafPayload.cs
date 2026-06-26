@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using CsvHelper.Configuration.Attributes;
 using Uaf.Core.Helpers;
 
@@ -22,5 +23,14 @@ public sealed record UafPayload
             throw new ArgumentException("Argument 'Date' is unsatisfactory", nameof(Date));
         if (string.IsNullOrEmpty(Content) || Content.Length > 200)
             throw new ArgumentException("Argument 'Content' is unsatisfactory", nameof(Content));
+    }
+
+    [SetsRequiredMembers]
+    public UafPayload(string subject, string date, string content, IReadOnlyList<string> tags) : this()
+    {
+        Subject = subject;
+        Date = date;
+        Content = content;
+        Tags = tags;
     }
 }
