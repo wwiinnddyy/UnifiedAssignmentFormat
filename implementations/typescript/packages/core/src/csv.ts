@@ -1,7 +1,7 @@
 import { CSV_HEADER, FIELD_NAMES } from "./constants.js";
 import { UafError, UafErrorCode } from "./errors.js";
-import type { UafPayload } from "./types.js";
-import { uafPayloadSchema } from "./schema.js";
+import type { UafAssignment, UafDocument } from "./types.js";
+import { uafAssignmentSchema, uafDocumentSchema } from "./schema.js";
 
 /** Escape a single CSV field per RFC 4180 */
 function escapeField(value: string): string {
@@ -110,31 +110,28 @@ function tagsToCsv(tags: string[]): string {
   return tags.join(";");
 }
 
-export function serializePayload(payload: UafPayload): string {
-  const validated = uafPayloadSchema.parse(payload);
-  const row = [
-    escapeField(validated.subject),
-    escapeField(validated.date),
-    escapeField(validated.content),
-    escapeField(tagsToCsv(validated.tags)),
-  ].join(",");
-  return `${CSV_HEADER}\n${row}\n`;
+export function serializePayload(document: UafDocument): string {
+  const validated = validatePayload(document);
+  const rows = validated.map((assignment) =>
+    [
+      escapeField(assignment.subject),
+      escapeField(assignment.date),
+      escapeField(assignment.content),
+      escapeField(tagsToCsv(assignment.tags)),
+    ].join(","),
+  );
+  return `${CSV_HEADER}\n${rows.join("\n")}\n`;
 }
 
-export function parsePayload(csv: string): UafPayload {
+export function parsePayload(csv: string): UafDocument {
   const normalized = csv.replace(/^\uFEFF/, "").trim();
   const rows = splitCsvRows(normalized);
 
   if (rows.length < 2) {
-    throw new UafError(UafErrorCode.InvalidCsv, "CSV must contain header and exactly one data row");
-  }
-
-  if (rows.length > 2) {
-    throw new UafError(UafErrorCode.InvalidCsv, "CSV must contain exactly one data row");
+    throw new UafError(UafErrorCode.InvalidCsv, "CSV must contain a header and at least one data row");
   }
 
   const headerFields = parseCsvRow(rows[0]);
-  const dataFields = parseCsvRow(rows[1]);
 
   if (headerFields.join(",") !== CSV_HEADER) {
     throw new UafError(
@@ -143,39 +140,43 @@ export function parsePayload(csv: string): UafPayload {
     );
   }
 
-  if (dataFields.length !== FIELD_NAMES.length) {
-    throw new UafError(
-      UafErrorCode.InvalidCsv,
-      `Expected ${FIELD_NAMES.length} columns, got ${dataFields.length}`,
-    );
-  }
+  const assignments: UafAssignment[] = rows.slice(1).map((row, index) => {
+    const dataFields = parseCsvRow(row);
+    if (dataFields.length !== FIELD_NAMES.length) {
+      throw new UafError(
+        UafErrorCode.InvalidCsv,
+        `Row ${index + 2}: expected ${FIELD_NAMES.length} columns, got ${dataFields.length}`,
+      );
+    }
 
-  const [subject, date, content, tagsCol] = dataFields;
-  const payload: UafPayload = {
-    subject,
-    date,
-    content,
-    tags: tagsFromCsv(tagsCol),
-  };
+    const [subject, date, content, tagsCol] = dataFields;
+    const result = uafAssignmentSchema.safeParse({
+      subject,
+      date,
+      content,
+      tags: tagsFromCsv(tagsCol),
+    });
+    if (!result.success) {
+      throw new UafError(
+        UafErrorCode.InvalidPayload,
+        `Row ${index + 2}: ${result.error.errors
+          .map((e) => `${e.path.join(".")}: ${e.message}`)
+          .join("; ")}`,
+      );
+    }
+    return result.data;
+  });
 
-  const result = uafPayloadSchema.safeParse(payload);
-  if (!result.success) {
-    throw new UafError(
-      UafErrorCode.InvalidPayload,
-      result.error.errors.map((e) => `${e.path.join(".")}: ${e.message}`).join("; "),
-    );
-  }
-
-  return result.data;
+  return assignments as UafDocument;
 }
 
-export function validatePayload(payload: unknown): UafPayload {
-  const result = uafPayloadSchema.safeParse(payload);
+export function validatePayload(payload: unknown): UafDocument {
+  const result = uafDocumentSchema.safeParse(payload);
   if (!result.success) {
     throw new UafError(
       UafErrorCode.InvalidPayload,
       result.error.errors.map((e) => `${e.path.join(".")}: ${e.message}`).join("; "),
     );
   }
-  return result.data;
+  return result.data as UafDocument;
 }

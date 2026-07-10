@@ -2,7 +2,7 @@
 
 This document defines how a program should package, discover, read, and verify a complete UAF artifact set.
 
-The canonical exchange file remains the single-page UAF PDF described in [`uaf-v1.0.md`](./uaf-v1.0.md). An artifact set is the engineering package used by builders, validators, archives, and integration tests when the payload CSV, display HTML, and exchange PDF must travel together.
+The canonical exchange file remains the multi-assignment UAF PDF described in [`uaf-v1.0.md`](./uaf-v1.0.md). An artifact set is the engineering package used by builders, validators, archives, and integration tests when the payload CSV, display HTML, and exchange PDF must travel together.
 
 ## 1. Package Shape
 
@@ -68,10 +68,10 @@ If any step fails, the package MUST be treated as invalid. Consumers MAY still s
 
 A builder that creates a UAF artifact set SHOULD:
 
-1. Validate or create a `UafPayload`.
-2. Serialize the payload as `uaf_payload.csv`.
+1. Validate or create a non-empty `UafDocument`.
+2. Serialize every assignment row, in order, as `uaf_payload.csv`.
 3. Render `display.html` as a self-contained UAF HTML document.
-4. Print `display.html` to a single-page PDF and embed the same `uaf_payload.csv` as `document.pdf`.
+4. Print `display.html` to a one-or-more-page PDF and embed the same `uaf_payload.csv` as `document.pdf`.
 5. Write the CSV, HTML, and PDF into a clean `.uaf` directory.
 6. Compute each file's byte size and SHA-256 hash.
 7. Write `uaf-manifest.json` last, after all file hashes are known.

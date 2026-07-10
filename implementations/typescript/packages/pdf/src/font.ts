@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { UafPayload } from "@uaf/core";
+import type { UafDocument } from "@uaf/core";
 import type subsetFont from "subset-font";
 
 const packageDir = dirname(fileURLToPath(import.meta.url));
@@ -12,14 +12,19 @@ let sourceFontBytes: Uint8Array | undefined;
 const subsetCache = new Map<string, Uint8Array>();
 
 /** Characters used when rendering a homework card (for font subsetting). */
-export function collectPdfText(payload: UafPayload, dateDisplay: "zh" | "iso" = "zh"): string {
-  const parts = [payload.subject, payload.content, ...payload.tags, "使用 UAF 导出未标记..."];
+export function collectPdfText(document: UafDocument, dateDisplay: "zh" | "iso" = "zh"): string {
+  const parts = ["使用 UAF v1.0 导出未标记正文下页继续（续）"];
+  for (const assignment of document) {
+    parts.push(assignment.subject, assignment.content, ...assignment.tags);
+  }
   if (dateDisplay === "zh") {
-    const d = new Date(payload.date);
-    parts.push(`${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`);
+    for (const assignment of document) {
+      const d = new Date(assignment.date);
+      parts.push(`${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`);
+    }
     parts.push("年月日");
   } else {
-    parts.push(payload.date);
+    parts.push(...document.map((assignment) => assignment.date));
   }
   return [...new Set(parts.join(""))].sort().join("");
 }

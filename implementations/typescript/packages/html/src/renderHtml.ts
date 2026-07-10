@@ -1,7 +1,6 @@
-import { serializePayload, type UafPayload } from "@uaf/core";
+import { serializePayload, type UafAssignment, type UafDocument } from "@uaf/core";
 
 export interface RenderHtmlOptions {
-  /** Display date in Chinese ("YYYY年M月D日") or keep ISO format. Defaults to "zh". */
   dateDisplay?: "zh" | "iso";
 }
 
@@ -14,178 +13,111 @@ function escapeHtml(text: string): string {
     .replace(/'/g, "&#39;");
 }
 
-function formatDateZh(dateStr: string): string {
-  const d = new Date(dateStr);
-  if (Number.isNaN(d.getTime())) return dateStr;
-  const year = d.getFullYear();
-  const month = d.getMonth() + 1;
-  const day = d.getDate();
-  return `${year}年${month}月${day}日`;
+function formatDate(date: string, mode: "zh" | "iso"): string {
+  if (mode === "iso") return date;
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (dateOnly) return `${dateOnly[1]}年${Number(dateOnly[2])}月${Number(dateOnly[3])}日`;
+  const parsed = new Date(date);
+  return Number.isNaN(parsed.getTime())
+    ? date
+    : `${parsed.getFullYear()}年${parsed.getMonth() + 1}月${parsed.getDate()}日`;
 }
 
-function formatDate(dateStr: string, mode: "zh" | "iso"): string {
-  return mode === "zh" ? formatDateZh(dateStr) : dateStr;
+function splitContent(content: string, limit = 520): string[] {
+  const normalized = content.replace(/\r\n?/g, "\n");
+  const chunks: string[] = [];
+  let cursor = 0;
+  while (cursor < normalized.length) {
+    let end = Math.min(cursor + limit, normalized.length);
+    if (end < normalized.length) {
+      const breakAt = normalized.lastIndexOf("\n", end);
+      if (breakAt > cursor + limit / 2) end = breakAt + 1;
+    }
+    chunks.push(normalized.slice(cursor, end));
+    cursor = end;
+  }
+  return chunks.length > 0 ? chunks : [""];
 }
 
 function renderTags(tags: string[]): string {
   if (tags.length === 0) return "";
-  const chips = tags
+  return `<div class="tags">${tags
     .map((tag) => `<span class="tag-chip">${escapeHtml(tag)}</span>`)
-    .join("");
-  return `<div class="tags">${chips}</div>`;
+    .join("")}</div>`;
 }
 
-function renderContent(content: string): string {
-  // Preserve line breaks as <br> while escaping HTML
-  return content
-    .split("\n")
-    .map((line) => escapeHtml(line))
-    .join("<br>");
+function renderCard(
+  assignment: UafAssignment,
+  content: string,
+  index: number,
+  total: number,
+  dateDisplay: "zh" | "iso",
+): string {
+  const continuation = index > 0 ? "（续）" : "";
+  const tags = index === total - 1 ? renderTags(assignment.tags) : '<div class="continued">正文下页继续</div>';
+  const footer = tags ? `\n  ${tags}` : "";
+  return `<article class="card">
+  <header class="header">
+    <span class="subject-pill">${escapeHtml(assignment.subject)}${continuation}</span>
+    <span class="date-pill">${escapeHtml(formatDate(assignment.date, dateDisplay))}</span>
+  </header>
+  <div class="content">${content.split("\n").map(escapeHtml).join("<br>")}</div>${footer}
+</article>`;
 }
 
-/**
- * Render a UAF payload into a self-contained HTML document string.
- *
- * The returned HTML is a complete, standalone document with all CSS inlined.
- * It is designed to be printed directly from a modern browser to A4 PDF.
- */
-export function renderUafHtml(payload: UafPayload, options?: RenderHtmlOptions): string {
+export function renderUafHtml(document: UafDocument, options?: RenderHtmlOptions): string {
   const dateDisplay = options?.dateDisplay ?? "zh";
-  const subject = escapeHtml(payload.subject);
-  const date = escapeHtml(formatDate(payload.date, dateDisplay));
-  const content = renderContent(payload.content);
-  const tagsHtml = renderTags(payload.tags);
-  const payloadCsv = escapeHtml(serializePayload(payload));
+  const cards = document.flatMap((assignment) => {
+    const chunks = splitContent(assignment.content);
+    return chunks.map((content, index) => renderCard(assignment, content, index, chunks.length, dateDisplay));
+  });
+  const payloadCsv = escapeHtml(serializePayload(document));
 
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UAF - ${subject}</title>
+<title>UAF - 作业</title>
 <style>
-@page {
-  size: A4 portrait;
-  margin: 0;
-}
-
+@page { size: A4 portrait; margin: 36pt 36pt 58pt; }
 @media print {
-  body {
-    margin: 0;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
+  body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .watermark { position: fixed; }
 }
-
-* {
-  box-sizing: border-box;
-}
-
-html, body {
-  margin: 0;
-  padding: 0;
-}
-
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
 body {
-  width: 210mm;
-  min-height: 297mm;
   background: #F8FAFC;
-  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "WenQuanYi Micro Hei", sans-serif;
   color: #0F172A;
-  position: relative;
-  padding: 40pt;
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
-
+.document {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14pt;
+  align-items: start;
+}
 .card {
+  break-inside: avoid;
   background: #FFFFFF;
   border: 1pt solid #E2E8F0;
   border-radius: 16pt;
   box-shadow: 0 2pt 8pt rgba(148, 163, 184, 0.15);
-  width: 100%;
-  padding: 24pt;
+  overflow: hidden;
 }
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16pt;
-}
-
-.subject-pill {
-  display: inline-block;
-  background: #2563EB;
-  color: #FFFFFF;
-  font-size: 14pt;
-  line-height: 1;
-  padding: 8pt 16pt;
-  border-radius: 9999pt;
-  font-weight: 500;
-}
-
-.date-pill {
-  display: inline-block;
-  background: #F1F5F9;
-  color: #334155;
-  font-size: 12pt;
-  line-height: 1;
-  padding: 6pt 12pt;
-  border-radius: 9999pt;
-}
-
-.divider {
-  height: 1pt;
-  background: #E2E8F0;
-  margin-bottom: 20pt;
-}
-
-.content {
-  font-size: 22pt;
-  line-height: 1.5;
-  color: #0F172A;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8pt;
-  margin-top: 20pt;
-}
-
-.tag-chip {
-  display: inline-block;
-  background: #E0E7FF;
-  color: #3730A3;
-  font-size: 11pt;
-  line-height: 1;
-  padding: 5pt 10pt;
-  border-radius: 9999pt;
-}
-
-.watermark {
-  position: absolute;
-  right: 40pt;
-  bottom: 40pt;
-  font-size: 10pt;
-  color: #94A3B8;
-  opacity: 0.5;
-  pointer-events: none;
-  user-select: none;
-}
+.header { background: #2563EB; padding: 12pt 14pt; }
+.subject-pill { display: block; color: #FFFFFF; font-size: 17pt; font-weight: 600; overflow-wrap: anywhere; }
+.date-pill { display: block; color: #DBEAFE; font-size: 9.5pt; margin-top: 3pt; }
+.content { padding: 16pt 14pt 12pt; font-size: 13.5pt; line-height: 1.42; overflow-wrap: anywhere; }
+.tags { display: flex; flex-wrap: wrap; gap: 6pt; padding: 0 14pt 14pt; }
+.tag-chip { background: #E0E7FF; color: #3730A3; font-size: 9.5pt; padding: 4pt 8pt; border-radius: 9999pt; }
+.continued { color: #64748B; font-size: 9.5pt; padding: 0 14pt 14pt; }
+.watermark { right: 36pt; bottom: 30pt; color: #94A3B8; opacity: .65; font-size: 9pt; }
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="header">
-    <span class="subject-pill">${subject}</span>
-    <span class="date-pill">${date}</span>
-  </div>
-  <div class="divider"></div>
-  <div class="content">${content}</div>
-  ${tagsHtml}
-</div>
+<main class="document">${cards.join("\n")}</main>
 <div class="watermark">使用 UAF v1.0 导出</div>
 <template id="uaf-payload-csv" data-filename="uaf_payload.csv">${payloadCsv}</template>
 </body>

@@ -65,18 +65,12 @@ import {
 } from "@uaf/html";
 import { extractUafPayload } from "@uaf/pdf";
 
-const html = renderUafHtml({
-  subject: "数学",
-  date: "2026-05-19",
-  content: "完成课本第45页第1、2题",
-  tags: ["必做", "几何"],
-});
-const pdfBytes = await createUafPdfFromHtml({
-  subject: "数学",
-  date: "2026-05-19",
-  content: "完成课本第45页第1、2题",
-  tags: ["必做", "几何"],
-});
+const assignments = [
+  { subject: "数学", date: "2026-05-19", content: "完成课本第45页第1、2题", tags: ["必做"] },
+  { subject: "语文", date: "2026-05-19", content: "背诵古诗并完成仿写", tags: ["背诵"] },
+];
+const html = renderUafHtml(assignments);
+const pdfBytes = await createUafPdfFromHtml(assignments);
 
 const payload = await extractUafPayload(pdfBytes);
 const payloadFromHtml = extractUafPayloadFromHtml(html);

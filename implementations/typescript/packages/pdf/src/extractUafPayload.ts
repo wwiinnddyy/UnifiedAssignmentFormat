@@ -1,7 +1,7 @@
-import { parsePayload, type UafPayload } from "@uaf/core";
+import { parsePayload, type UafDocument } from "@uaf/core";
 import { extractEmbeddedFile } from "./embeddedFiles.js";
 
-export async function extractUafPayload(pdfBytes: Uint8Array): Promise<UafPayload> {
+export async function extractUafPayload(pdfBytes: Uint8Array): Promise<UafDocument> {
   const csvBytes = await extractEmbeddedFile(pdfBytes);
   const csv = new TextDecoder("utf-8").decode(csvBytes);
   return parsePayload(csv);

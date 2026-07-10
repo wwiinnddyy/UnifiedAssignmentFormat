@@ -20,7 +20,7 @@ public sealed partial class UafArtifactPackage
 
     private UafArtifactPackage(
         UafArtifactManifest manifest,
-        UafPayload payload,
+        UafDocument payload,
         IReadOnlyDictionary<string, byte[]> artifacts)
     {
         Manifest = manifest;
@@ -34,7 +34,7 @@ public sealed partial class UafArtifactPackage
 
     public UafArtifactManifest Manifest { get; }
 
-    public UafPayload Payload { get; }
+    public UafDocument Payload { get; }
 
     public IReadOnlyDictionary<string, byte[]> Artifacts => _artifacts.ToDictionary(
         pair => pair.Key,
@@ -47,7 +47,7 @@ public sealed partial class UafArtifactPackage
 
     public byte[] PdfBytes => GetArtifact(Manifest.Entrypoints.Exchange);
 
-    public static UafArtifactPackage Create(UafPayload payload, DateTimeOffset? createdAt = null)
+    public static UafArtifactPackage Create(UafDocument payload, DateTimeOffset? createdAt = null)
     {
         ArgumentNullException.ThrowIfNull(payload);
 
@@ -221,11 +221,11 @@ public sealed partial class UafArtifactPackage
     {
         var csvPayload = UafCsv.Parse(RequiredArtifact(artifacts, manifest.Entrypoints.Payload));
         var htmlPayload = UafHtml.ExtractPayload(UafCsv.DecodeUtf8(RequiredArtifact(artifacts, manifest.Entrypoints.Display)));
-        UafPayload.EnsureSame("HTML", csvPayload, htmlPayload);
+        UafDocument.EnsureSame("HTML", csvPayload, htmlPayload);
 
         var pdfBytes = RequiredArtifact(artifacts, manifest.Entrypoints.Exchange);
         var pdfPayload = UafPdf.ExtractPayload(pdfBytes);
-        UafPayload.EnsureSame("PDF", csvPayload, pdfPayload);
+        UafDocument.EnsureSame("PDF", csvPayload, pdfPayload);
 
         return new UafArtifactPackage(manifest, csvPayload, artifacts);
     }

@@ -2,7 +2,7 @@ import {
   parsePayload,
   UafError,
   UafErrorCode,
-  type UafPayload,
+  type UafDocument,
 } from "@uaf/core";
 
 const PAYLOAD_TEMPLATE_RE =
@@ -20,7 +20,7 @@ export function extractUafPayloadCsvFromHtml(html: string): string {
   return decodeHtmlEntities(match[2]);
 }
 
-export function extractUafPayloadFromHtml(html: string): UafPayload {
+export function extractUafPayloadFromHtml(html: string): UafDocument {
   return parsePayload(extractUafPayloadCsvFromHtml(html));
 }
 

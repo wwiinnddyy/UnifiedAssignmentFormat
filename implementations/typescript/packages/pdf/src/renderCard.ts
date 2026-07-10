@@ -1,310 +1,255 @@
-import type { PDFPage, PDFFont, RGB } from "pdf-lib";
+import type { PDFDocument, PDFPage, PDFFont } from "pdf-lib";
 import { rgb } from "pdf-lib";
-import type { UafPayload } from "@uaf/core";
+import type { UafAssignment, UafDocument } from "@uaf/core";
 import { drawPill, drawRoundedRect } from "./drawShapes.js";
 
 export const PAGE_WIDTH = 595.28;
 export const PAGE_HEIGHT = 841.89;
 
-const PAGE_MARGIN = 40;
-const TILE_W = 260;
-const TILE_H = 260;
-const TILE_RADIUS = 16;
-const TILE_PAD = 15;
-const SUBJECT_H = 62;
-const TAGS_H = 54;
-const CONTENT_GAP = 10;
-
-const SUBJECT_FONT = 20;
-const DATE_FONT = 10;
-const CONTENT_SIZES = [16, 14.5, 13];
-const TAG_FONT = 10;
+const PAGE_MARGIN = 36;
+const WATERMARK_SPACE = 24;
+const COLUMN_GAP = 14;
+const ROW_GAP = 14;
+const CARD_WIDTH = (PAGE_WIDTH - PAGE_MARGIN * 2 - COLUMN_GAP) / 2;
+const CARD_PAD = 14;
+const HEADER_HEIGHT = 48;
+const CONTENT_FONT = 13.5;
+const CONTENT_LINE_HEIGHT = 19;
+const MAX_LINES_PER_FRAGMENT = 12;
+const TAG_AREA_HEIGHT = 39;
+const MIN_CARD_HEIGHT = 140;
+const SUBJECT_FONT = 17;
+const DATE_FONT = 9.5;
+const TAG_FONT = 9.5;
 const WATERMARK_FONT = 9;
 
 const COLORS = {
-  pageBg: rgb(244 / 255, 247 / 255, 250 / 255),
-  tileShadow: rgb(196 / 255, 206 / 255, 218 / 255),
-  tileBorder: rgb(42 / 255, 55 / 255, 71 / 255),
-  tileBg: rgb(255 / 255, 255 / 255, 255 / 255),
-  subjectBg: rgb(31 / 255, 49 / 255, 70 / 255),
-  subjectAccent: rgb(245 / 255, 158 / 255, 11 / 255),
-  subjectText: rgb(255 / 255, 255 / 255, 255 / 255),
-  dateText: rgb(204 / 255, 232 / 255, 238 / 255),
-  contentBg: rgb(248 / 255, 251 / 255, 252 / 255),
-  contentBorder: rgb(187 / 255, 205 / 255, 216 / 255),
-  contentText: rgb(20 / 255, 29 / 255, 40 / 255),
-  tagsBg: rgb(255 / 255, 244 / 255, 214 / 255),
-  tagsRule: rgb(222 / 255, 186 / 255, 94 / 255),
-  tagChipBg: rgb(255 / 255, 252 / 255, 244 / 255),
-  tagChipBorder: rgb(180 / 255, 117 / 255, 20 / 255),
-  tagChipShadow: rgb(226 / 255, 196 / 255, 126 / 255),
-  tagText: rgb(72 / 255, 48 / 255, 13 / 255),
-  mutedText: rgb(91 / 255, 103 / 255, 116 / 255),
-  watermark: rgb(114 / 255, 126 / 255, 140 / 255),
+  pageBg: rgb(248 / 255, 250 / 255, 252 / 255),
+  shadow: rgb(203 / 255, 213 / 255, 225 / 255),
+  border: rgb(226 / 255, 232 / 255, 240 / 255),
+  card: rgb(1, 1, 1),
+  header: rgb(37 / 255, 99 / 255, 235 / 255),
+  headerText: rgb(1, 1, 1),
+  dateText: rgb(219 / 255, 234 / 255, 254 / 255),
+  content: rgb(15 / 255, 23 / 255, 42 / 255),
+  chip: rgb(224 / 255, 231 / 255, 255 / 255),
+  chipText: rgb(55 / 255, 48 / 255, 163 / 255),
+  muted: rgb(100 / 255, 116 / 255, 139 / 255),
+  watermark: rgb(148 / 255, 163 / 255, 184 / 255),
 };
 
-interface TextBlock {
+interface CardFragment {
+  assignment: UafAssignment;
+  continuation: boolean;
   lines: string[];
-  fontSize: number;
-  lineHeight: number;
-}
-
-interface TagChip {
-  label: string;
-  w: number;
-  h: number;
-}
-
-function formatDateDisplay(isoDate: string): string {
-  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
-  if (dateOnly) return `${dateOnly[1]}年${Number(dateOnly[2])}月${Number(dateOnly[3])}日`;
-
-  const d = new Date(isoDate);
-  if (Number.isNaN(d.getTime())) return isoDate;
-  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
-}
-
-function textBaselineInBox(
-  boxBottom: number,
-  boxH: number,
-  font: PDFFont,
-  fontSize: number,
-): number {
-  const fontH = font.heightAtSize(fontSize);
-  return boxBottom + (boxH - fontH) / 2 + fontH * 0.72;
+  showTags: boolean;
+  height: number;
 }
 
 function widthOf(font: PDFFont, text: string, size: number): number {
   return font.widthOfTextAtSize(text, size);
 }
 
-function ellipsize(text: string, font: PDFFont, size: number, maxW: number): string {
-  if (widthOf(font, text, size) <= maxW) return text;
-
+function ellipsize(text: string, font: PDFFont, size: number, maxWidth: number): string {
+  if (widthOf(font, text, size) <= maxWidth) return text;
   let output = "";
   for (const char of text) {
-    if (widthOf(font, `${output}${char}...`, size) > maxW) {
-      return output.length > 0 ? `${output}...` : "...";
-    }
+    if (widthOf(font, `${output}${char}...`, size) > maxWidth) break;
     output += char;
   }
-  return output;
+  return `${output}...`;
 }
 
-function wrapText(text: string, font: PDFFont, size: number, maxW: number): string[] {
+function wrapText(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
   const lines: string[] = [];
   let current = "";
-
-  for (const char of text) {
+  const normalized = text.replace(/\r\n?/g, "\n");
+  for (const char of normalized) {
     if (char === "\n") {
       lines.push(current);
       current = "";
       continue;
     }
-
-    const next = current + char;
-    if (current && widthOf(font, next, size) > maxW) {
+    if (current && widthOf(font, `${current}${char}`, size) > maxWidth) {
       lines.push(current);
       current = char;
     } else {
-      current = next;
+      current += char;
     }
   }
-
   if (current || lines.length === 0) lines.push(current);
   return lines;
 }
 
-function fitTextBlock(text: string, font: PDFFont, maxW: number, maxH: number): TextBlock {
-  for (const size of CONTENT_SIZES) {
-    const lineHeight = size * 1.42;
-    const lines = wrapText(text, font, size, maxW);
-    if (lines.length * lineHeight <= maxH) {
-      return { lines, fontSize: size, lineHeight };
+function createFragments(document: UafDocument, font: PDFFont): CardFragment[] {
+  const maxWidth = CARD_WIDTH - CARD_PAD * 2;
+  const fragments: CardFragment[] = [];
+  for (const assignment of document) {
+    const lines = wrapText(assignment.content, font, CONTENT_FONT, maxWidth);
+    for (let index = 0; index < lines.length; index += MAX_LINES_PER_FRAGMENT) {
+      const fragmentLines = lines.slice(index, index + MAX_LINES_PER_FRAGMENT);
+      const showTags = index + MAX_LINES_PER_FRAGMENT >= lines.length;
+      const contentHeight = fragmentLines.length * CONTENT_LINE_HEIGHT;
+      const height = Math.max(
+        MIN_CARD_HEIGHT,
+        CARD_PAD + HEADER_HEIGHT + 12 + contentHeight + (showTags ? TAG_AREA_HEIGHT : 12) + CARD_PAD,
+      );
+      fragments.push({
+        assignment,
+        continuation: index > 0,
+        lines: fragmentLines,
+        showTags,
+        height,
+      });
     }
   }
-
-  const fontSize = CONTENT_SIZES[CONTENT_SIZES.length - 1];
-  const lineHeight = fontSize * 1.42;
-  const maxLines = Math.max(1, Math.floor(maxH / lineHeight));
-  const lines = wrapText(text, font, fontSize, maxW).slice(0, maxLines);
-  const lastIndex = lines.length - 1;
-  lines[lastIndex] = ellipsize(lines[lastIndex] ?? "", font, fontSize, maxW);
-  return { lines, fontSize, lineHeight };
+  return fragments;
 }
 
-function layoutTags(tags: string[], font: PDFFont, maxW: number): TagChip[] {
-  const chipH = 20;
-  const chips: TagChip[] = [];
-  let used = 0;
-
-  for (const rawTag of tags) {
-    const label = ellipsize(rawTag, font, TAG_FONT, maxW - 16);
-    const w = Math.min(maxW, widthOf(font, label, TAG_FONT) + 18);
-    if (chips.length > 0 && used + 7 + w > maxW) break;
-    chips.push({ label, w, h: chipH });
-    used += (chips.length > 1 ? 7 : 0) + w;
-  }
-
-  return chips;
+function formatDate(date: string, mode: "zh" | "iso"): string {
+  if (mode === "iso") return date;
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (dateOnly) return `${dateOnly[1]}年${Number(dateOnly[2])}月${Number(dateOnly[3])}日`;
+  const parsed = new Date(date);
+  return Number.isNaN(parsed.getTime())
+    ? date
+    : `${parsed.getFullYear()}年${parsed.getMonth() + 1}月${parsed.getDate()}日`;
 }
 
-function drawText(
-  page: PDFPage,
-  text: string,
-  x: number,
-  y: number,
-  font: PDFFont,
-  size: number,
-  color: RGB,
-): void {
-  page.drawText(text, { x, y, font, size, color });
-}
-
-function drawStrongText(
-  page: PDFPage,
-  text: string,
-  x: number,
-  y: number,
-  font: PDFFont,
-  size: number,
-  color: RGB,
-): void {
-  page.drawText(text, { x, y, font, size, color });
-  page.drawText(text, { x: x + 0.16, y, font, size, color });
-  page.drawText(text, { x, y: y + 0.14, font, size, color });
-}
-
-function drawTopRoundedBand(page: PDFPage, x: number, y: number, w: number, h: number): void {
-  drawRoundedRect(page, x, y, w, h, TILE_RADIUS, COLORS.subjectBg);
-  page.drawRectangle({
-    x,
-    y,
-    width: w,
-    height: TILE_RADIUS,
-    color: COLORS.subjectBg,
-  });
-}
-
-function drawAssignmentTile(
-  page: PDFPage,
-  payload: UafPayload,
-  font: PDFFont,
-  fontBold: PDFFont,
-  options: { dateDisplay?: "zh" | "iso"; canRenderCjk?: boolean },
-): void {
-  const x = PAGE_MARGIN;
-  const y = PAGE_HEIGHT - PAGE_MARGIN - TILE_H;
-  const innerX = x + TILE_PAD;
-  const innerW = TILE_W - TILE_PAD * 2;
-  const subjectY = y + TILE_H - SUBJECT_H;
-  const tagsY = y;
-  const contentY = tagsY + TAGS_H + CONTENT_GAP;
-  const contentH = subjectY - contentY - CONTENT_GAP;
-  const dateText = options.dateDisplay === "iso" ? payload.date : formatDateDisplay(payload.date);
-
-  drawRoundedRect(page, x + 4, y - 4, TILE_W, TILE_H, TILE_RADIUS, COLORS.tileShadow);
-  drawRoundedRect(page, x, y, TILE_W, TILE_H, TILE_RADIUS, COLORS.tileBg, {
-    color: COLORS.tileBorder,
-    width: 1.4,
-  });
-
-  drawTopRoundedBand(page, x, subjectY, TILE_W, SUBJECT_H);
-  drawRoundedRect(page, innerX, subjectY + 14, 5, SUBJECT_H - 28, 2.5, COLORS.subjectAccent);
-
-  const headerTextX = innerX + 18;
-  const headerTextW = innerW - 18;
-  const subject = ellipsize(payload.subject, fontBold, SUBJECT_FONT, headerTextW);
-  drawStrongText(page, subject, headerTextX, subjectY + 31, fontBold, SUBJECT_FONT, COLORS.subjectText);
-  drawText(
-    page,
-    ellipsize(dateText, font, DATE_FONT, headerTextW),
-    headerTextX,
-    subjectY + 13,
-    font,
-    DATE_FONT,
-    COLORS.dateText,
-  );
-
-  drawRoundedRect(page, innerX, contentY, innerW, contentH, 9, COLORS.contentBg, {
-    color: COLORS.contentBorder,
-    width: 0.9,
-  });
-
-  const textBlock = fitTextBlock(payload.content, font, innerW - 20, contentH - 22);
-  let lineY = contentY + contentH - 20;
-  for (const line of textBlock.lines) {
-    if (lineY < contentY + 10) break;
-    drawText(page, line, innerX + 10, lineY, font, textBlock.fontSize, COLORS.contentText);
-    lineY -= textBlock.lineHeight;
-  }
-
-  drawRoundedRect(page, x, tagsY, TILE_W, TAGS_H, TILE_RADIUS, COLORS.tagsBg);
-  page.drawRectangle({
-    x,
-    y: tagsY + TAGS_H - TILE_RADIUS,
-    width: TILE_W,
-    height: TILE_RADIUS,
-    color: COLORS.tagsBg,
-  });
-  page.drawLine({
-    start: { x: x + 1.5, y: tagsY + TAGS_H },
-    end: { x: x + TILE_W - 1.5, y: tagsY + TAGS_H },
-    thickness: 1,
-    color: COLORS.tagsRule,
-  });
-
-  const tags = layoutTags(payload.tags, font, innerW);
-  if (tags.length === 0) {
-    const label = options.canRenderCjk === false ? "No tags" : "未标记";
-    drawText(page, label, innerX, tagsY + 18, font, TAG_FONT, COLORS.mutedText);
-    return;
-  }
-
-  let tagX = innerX;
-  for (const chip of tags) {
-    drawPill(page, tagX + 1, tagsY + 12, chip.w, chip.h, COLORS.tagChipShadow);
-    drawPill(page, tagX, tagsY + 13, chip.w, chip.h, COLORS.tagChipBg, {
-      color: COLORS.tagChipBorder,
-      width: 0.8,
-    });
-    drawStrongText(
-      page,
-      chip.label,
-      tagX + 9,
-      textBaselineInBox(tagsY + 13, chip.h, font, TAG_FONT),
-      font,
-      TAG_FONT,
-      COLORS.tagText,
-    );
-    tagX += chip.w + 7;
-  }
-}
-
-export function renderAssignmentCard(
-  page: PDFPage,
-  payload: UafPayload,
-  font: PDFFont,
-  fontBold: PDFFont,
-  options: { dateDisplay?: "zh" | "iso"; canRenderCjk?: boolean } = {},
-): void {
-  page.drawRectangle({
-    x: 0,
-    y: 0,
-    width: PAGE_WIDTH,
-    height: PAGE_HEIGHT,
-    color: COLORS.pageBg,
-  });
-
-  drawAssignmentTile(page, payload, font, fontBold, options);
-
-  const watermarkText = options.canRenderCjk === false ? "Exported with UAF" : "使用 UAF 导出";
-  const watermarkW = widthOf(font, watermarkText, WATERMARK_FONT);
-  page.drawText(watermarkText, {
-    x: PAGE_WIDTH - PAGE_MARGIN - watermarkW,
-    y: PAGE_MARGIN,
+function drawPageBackground(page: PDFPage, font: PDFFont, canRenderCjk: boolean): void {
+  page.drawRectangle({ x: 0, y: 0, width: PAGE_WIDTH, height: PAGE_HEIGHT, color: COLORS.pageBg });
+  const watermark = canRenderCjk ? "使用 UAF v1.0 导出" : "Exported with UAF v1.0";
+  page.drawText(watermark, {
+    x: PAGE_WIDTH - PAGE_MARGIN - widthOf(font, watermark, WATERMARK_FONT),
+    y: PAGE_MARGIN - 4,
     size: WATERMARK_FONT,
     font,
     color: COLORS.watermark,
+    opacity: 0.65,
   });
+}
+
+function drawTags(page: PDFPage, tags: string[], x: number, y: number, font: PDFFont): void {
+  if (tags.length === 0) {
+    page.drawText("", { x, y, font, size: TAG_FONT });
+    return;
+  }
+  let cursor = x;
+  const maxX = x + CARD_WIDTH - CARD_PAD * 2;
+  for (const tag of tags) {
+    const label = ellipsize(tag, font, TAG_FONT, CARD_WIDTH - CARD_PAD * 2 - 16);
+    const width = Math.min(widthOf(font, label, TAG_FONT) + 16, CARD_WIDTH - CARD_PAD * 2);
+    if (cursor + width > maxX) break;
+    drawPill(page, cursor, y, width, 19, COLORS.chip);
+    page.drawText(label, { x: cursor + 8, y: y + 5.2, size: TAG_FONT, font, color: COLORS.chipText });
+    cursor += width + 6;
+  }
+}
+
+function drawFragment(
+  page: PDFPage,
+  fragment: CardFragment,
+  x: number,
+  top: number,
+  font: PDFFont,
+  fontBold: PDFFont,
+  dateDisplay: "zh" | "iso",
+  canRenderCjk: boolean,
+): void {
+  const y = top - fragment.height;
+  drawRoundedRect(page, x + 3, y - 3, CARD_WIDTH, fragment.height, 12, COLORS.shadow);
+  drawRoundedRect(page, x, y, CARD_WIDTH, fragment.height, 12, COLORS.card, {
+    color: COLORS.border,
+    width: 1,
+  });
+  drawRoundedRect(page, x, top - HEADER_HEIGHT, CARD_WIDTH, HEADER_HEIGHT, 12, COLORS.header);
+  page.drawRectangle({ x, y: top - HEADER_HEIGHT, width: CARD_WIDTH, height: 12, color: COLORS.header });
+
+  const continuation = fragment.continuation
+    ? canRenderCjk ? "（续）" : " (cont.)"
+    : "";
+  const subject = ellipsize(
+    `${fragment.assignment.subject}${continuation}`,
+    fontBold,
+    SUBJECT_FONT,
+    CARD_WIDTH - CARD_PAD * 2,
+  );
+  page.drawText(subject, {
+    x: x + CARD_PAD,
+    y: top - 23,
+    size: SUBJECT_FONT,
+    font: fontBold,
+    color: COLORS.headerText,
+  });
+  page.drawText(formatDate(fragment.assignment.date, dateDisplay), {
+    x: x + CARD_PAD,
+    y: top - 39,
+    size: DATE_FONT,
+    font,
+    color: COLORS.dateText,
+  });
+
+  let lineY = top - HEADER_HEIGHT - 24;
+  for (const line of fragment.lines) {
+    page.drawText(line || " ", {
+      x: x + CARD_PAD,
+      y: lineY,
+      size: CONTENT_FONT,
+      font,
+      color: COLORS.content,
+    });
+    lineY -= CONTENT_LINE_HEIGHT;
+  }
+  if (fragment.showTags) {
+    drawTags(page, fragment.assignment.tags, x + CARD_PAD, y + 13, font);
+  } else {
+    const continued = canRenderCjk ? "正文下页继续" : "Continued on next card";
+    page.drawText(continued, {
+      x: x + CARD_PAD,
+      y: y + 15,
+      size: TAG_FONT,
+      font,
+      color: COLORS.muted,
+    });
+  }
+}
+
+export function renderAssignmentDocument(
+  pdfDoc: PDFDocument,
+  document: UafDocument,
+  font: PDFFont,
+  fontBold: PDFFont,
+  options: { dateDisplay?: "zh" | "iso"; canRenderCjk?: boolean } = {},
+): PDFPage[] {
+  const fragments = createFragments(document, font);
+  const pages: PDFPage[] = [];
+  const dateDisplay = options.dateDisplay ?? "zh";
+  const pageBottom = PAGE_MARGIN + WATERMARK_SPACE;
+  let page: PDFPage | undefined;
+  let cursorTop = PAGE_HEIGHT - PAGE_MARGIN;
+
+  for (let index = 0; index < fragments.length; index += 2) {
+    const pair = fragments.slice(index, index + 2);
+    const rowHeight = Math.max(...pair.map((fragment) => fragment.height));
+    if (!page || cursorTop - rowHeight < pageBottom) {
+      page = pdfDoc.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
+      pages.push(page);
+      drawPageBackground(page, font, options.canRenderCjk !== false);
+      cursorTop = PAGE_HEIGHT - PAGE_MARGIN;
+    }
+    pair.forEach((fragment, column) => {
+      drawFragment(
+        page!,
+        fragment,
+        PAGE_MARGIN + column * (CARD_WIDTH + COLUMN_GAP),
+        cursorTop,
+        font,
+        fontBold,
+        dateDisplay,
+        options.canRenderCjk !== false,
+      );
+    });
+    cursorTop -= rowHeight + ROW_GAP;
+  }
+  return pages;
 }

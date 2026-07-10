@@ -3,7 +3,7 @@
   "schemaVersion": "1.0",
   "packageKind": "uaf-artifact-set",
   "uafVersion": "1.0",
-  "createdAt": "2026-06-07T17:15:52.791Z",
+  "createdAt": "2026-07-10T17:37:03.886Z",
   "entrypoints": {
     "payload": "uaf_payload.csv",
     "display": "display.html",
@@ -14,22 +14,22 @@
       "role": "payload.csv",
       "path": "uaf_payload.csv",
       "mediaType": "text/csv; charset=utf-8",
-      "bytes": 121,
-      "sha256": "a93ee7acc3399c57692e6554c2ec542bea43e845187a5c210937e6ccb11b744c"
+      "bytes": 256,
+      "sha256": "c8f42aefd824a569d12e032eb7807cf482893bb43f72f2f215a301991d852ade"
     },
     {
       "role": "display.html",
       "path": "display.html",
       "mediaType": "text/html; charset=utf-8",
-      "bytes": 2590,
-      "sha256": "3f8df4f25dddccf649f102d05f629f81b9b3293df24f6527c99018e88ac206e8"
+      "bytes": 2933,
+      "sha256": "a8bc11908dd231405b7577ee5f7325d28e6307a08815301087a840129f07ca2d"
     },
     {
       "role": "exchange.pdf",
       "path": "document.pdf",
       "mediaType": "application/pdf",
-      "bytes": 53382,
-      "sha256": "261e4ce17d078daff3d485abbf6fdf8db2cc1324cbd79ab839040efe4dce9686"
+      "bytes": 106506,
+      "sha256": "bf3178d1e6e6f2f89bfc8003b302451e72ee81d39193b1c3284a4b08eaea66d4"
     }
   ],
   "pipeline": {

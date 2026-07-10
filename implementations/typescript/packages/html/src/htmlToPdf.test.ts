@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PDFDocument } from "pdf-lib";
 import { describe, expect, it } from "vitest";
-import type { UafPayload } from "@uaf/core";
+import type { UafDocument } from "@uaf/core";
 import { extractUafPayload } from "@uaf/pdf";
 import { createUafPdfFromHtml } from "./createUafPdf.js";
 import { htmlToPdf } from "./htmlToPdf.js";
@@ -120,12 +120,12 @@ describe("createUafPdfFromHtml", () => {
         // no-op
       },
     };
-    const payload: UafPayload = {
+    const payload: UafDocument = [{
       subject: "数学",
       date: "2026-05-19",
       content: "完成课本第45页第1、2题，请拍照上传。",
       tags: ["必做", "几何"],
-    };
+    }];
 
     const pdf = await createUafPdfFromHtml(payload, { browser });
     const resultDoc = await PDFDocument.load(pdf);
@@ -136,17 +136,17 @@ describe("createUafPdfFromHtml", () => {
     expect(await extractUafPayload(pdf)).toEqual(payload);
   });
 
-  it("rejects multi-page browser output", async () => {
+  it("accepts multi-page browser output", async () => {
     const baseDoc = await PDFDocument.create();
     baseDoc.addPage([595.28, 841.89]);
     baseDoc.addPage([595.28, 841.89]);
     const printedPdf = await baseDoc.save();
-    const payload: UafPayload = {
+    const payload: UafDocument = [{
       subject: "Math",
       date: "2026-05-19",
       content: "Complete page 45 exercises 1-2.",
       tags: ["required"],
-    };
+    }];
     const browser = {
       async newPage() {
         return {
@@ -166,8 +166,8 @@ describe("createUafPdfFromHtml", () => {
       },
     };
 
-    await expect(createUafPdfFromHtml(payload, { browser })).rejects.toThrow(
-      "exactly one page",
-    );
+    const pdf = await createUafPdfFromHtml(payload, { browser });
+    expect((await PDFDocument.load(pdf)).getPageCount()).toBe(2);
+    expect(await extractUafPayload(pdf)).toEqual(payload);
   });
 });

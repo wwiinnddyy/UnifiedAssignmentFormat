@@ -1,29 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { serializePayload, type UafPayload } from "@uaf/core";
+import { serializePayload, type UafDocument } from "@uaf/core";
 import { createUafHtml, createUafHtmlFromCsv } from "./createUafHtml.js";
 
-const payload: UafPayload = {
-  subject: "数学",
-  date: "2026-05-19",
-  content: "完成课本第45页第1、2题，请拍照上传。",
-  tags: ["必做", "几何"],
-};
+const document: UafDocument = [
+  { subject: "Math", date: "2026-05-19", content: "Exercises 1 and 2", tags: ["required"] },
+  { subject: "English", date: "2026-05-19", content: "Read Unit 3", tags: [] },
+];
 
 describe("createUafHtml", () => {
-  it("validates a payload and renders printable HTML", () => {
-    const html = createUafHtml(payload);
-
-    expect(html).toContain("<!DOCTYPE html>");
-    expect(html).toContain("数学");
-    expect(html).toContain("2026年5月19日");
+  it("validates and renders all assignments", () => {
+    const html = createUafHtml(document);
+    expect(html).toContain("Math");
+    expect(html).toContain("English");
   });
 
-  it("parses CSV before rendering HTML", () => {
-    const html = createUafHtmlFromCsv(serializePayload(payload), {
-      dateDisplay: "iso",
-    });
-
-    expect(html).toContain("2026-05-19");
-    expect(html).toContain('<span class="tag-chip">几何</span>');
+  it("parses multi-row CSV before rendering", () => {
+    const html = createUafHtmlFromCsv(serializePayload(document), { dateDisplay: "iso" });
+    expect(html.match(/2026-05-19/g)?.length).toBeGreaterThanOrEqual(2);
   });
 });

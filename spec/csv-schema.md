@@ -6,7 +6,7 @@
 |------|-----|
 | 文件名 | `uaf_payload.csv` |
 | 编码 | UTF-8，**无 BOM** |
-| 行数 | 2 行（1 行表头 + 1 行数据） |
+| 行数 | 至少 2 行（1 行表头 + 1 至多行数据） |
 | 列数 | 4 列（固定顺序） |
 
 ## 2. 表头
@@ -81,17 +81,21 @@ subject,date,content,tags
 英语,2026-05-19,朗读课文 Unit 3,
 ```
 
-## 6. 逻辑层映射
+## 6. 多记录与逻辑层映射
+
+每个数据行代表一项作业，行顺序即展示与交换顺序。空文档（只有表头）非法。
 
 解析后映射为：
 
 ```typescript
-interface UafPayload {
+interface UafAssignment {
   subject: string;
   date: string;
   content: string;
   tags: string[];  // 由 tags 列 split(';')，过滤空串
 }
+
+type UafDocument = [UafAssignment, ...UafAssignment[]];
 ```
 
 序列化时 `tags.join(';')` 写回 CSV 列。

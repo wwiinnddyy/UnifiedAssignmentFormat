@@ -51,8 +51,8 @@ async function assertPdfQuality(pdf) {
 
   const document = await PDFDocument.load(pdf);
   const pages = document.getPages();
-  if (pages.length !== 1) {
-    throw new Error(`Sample PDF must be exactly 1 page, received ${pages.length}`);
+  if (pages.length < 1) {
+    throw new Error("Sample PDF must contain at least one page");
   }
 
   const { width, height } = pages[0].getSize();

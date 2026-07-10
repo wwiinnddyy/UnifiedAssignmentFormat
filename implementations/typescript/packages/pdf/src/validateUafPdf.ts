@@ -24,8 +24,8 @@ export async function validateUafPdf(pdfBytes: Uint8Array): Promise<UafValidatio
   }
 
   const pageCount = pdfDoc.getPageCount();
-  if (pageCount !== 1) {
-    errors.push(`Expected 1 page, got ${pageCount}`);
+  if (pageCount < 1) {
+    errors.push("Expected at least 1 page");
   }
 
   try {

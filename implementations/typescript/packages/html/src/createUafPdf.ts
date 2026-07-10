@@ -3,7 +3,7 @@ import {
   serializePayload,
   UAF_PAYLOAD_FILENAME,
   validatePayload,
-  type UafPayload,
+  type UafDocument,
 } from "@uaf/core";
 import { renderUafHtml, type RenderHtmlOptions } from "./renderHtml.js";
 import { htmlToPdf, type HtmlToPdfOptions } from "./htmlToPdf.js";
@@ -24,7 +24,7 @@ export interface CreateUafPdfFromHtmlOptions
  * If you only need the HTML string, use {@link renderUafHtml} directly.
  */
 export async function createUafPdfFromHtml(
-  payload: UafPayload,
+  payload: UafDocument,
   options: CreateUafPdfFromHtmlOptions = {},
 ): Promise<Uint8Array> {
   const validated = validatePayload(payload);
@@ -36,8 +36,8 @@ export async function createUafPdfFromHtml(
 
   const pdfDoc = await PDFDocument.load(pdfBytes);
   const pageCount = pdfDoc.getPageCount();
-  if (pageCount !== 1) {
-    throw new Error(`UAF PDF must contain exactly one page; HTML renderer produced ${pageCount}`);
+  if (pageCount < 1) {
+    throw new Error("UAF PDF must contain at least one page");
   }
 
   await pdfDoc.attach(csvBytes, UAF_PAYLOAD_FILENAME, {

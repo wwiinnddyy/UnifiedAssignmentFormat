@@ -79,7 +79,7 @@ describe("uaf CLI smoke tests", () => {
       ...payloadArgs,
     ]);
 
-    expect(mocks.createUafHtml).toHaveBeenCalledWith(payload, {
+    expect(mocks.createUafHtml).toHaveBeenCalledWith([payload], {
       dateDisplay: "iso",
     });
     expect(mocks.writeFile).toHaveBeenCalledWith(
@@ -127,7 +127,7 @@ describe("uaf CLI smoke tests", () => {
 
     const run = await runCli(["create", "-o", "assignment.pdf", ...payloadArgs]);
 
-    expect(mocks.createUafPdfFromHtml).toHaveBeenCalledWith(payload, {
+    expect(mocks.createUafPdfFromHtml).toHaveBeenCalledWith([payload], {
       dateDisplay: "zh",
     });
     expect(mocks.createUafPdf).not.toHaveBeenCalled();
@@ -148,7 +148,7 @@ describe("uaf CLI smoke tests", () => {
       ...payloadArgs,
     ]);
 
-    expect(mocks.createUafPdf).toHaveBeenCalledWith(payload);
+    expect(mocks.createUafPdf).toHaveBeenCalledWith([payload]);
     expect(mocks.createUafPdfFromHtml).not.toHaveBeenCalled();
     expect(mocks.writeFile).toHaveBeenCalledWith(resolve("legacy.pdf"), pdfBytes);
     expect(run.exitSpy).toHaveBeenCalledWith(0);

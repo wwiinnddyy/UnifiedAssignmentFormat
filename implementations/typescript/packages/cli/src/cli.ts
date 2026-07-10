@@ -2,7 +2,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { Command } from "commander";
-import { parsePayload, UafError, UafErrorCode, type UafPayload } from "@uaf/core";
+import { parsePayload, UafError, UafErrorCode, type UafDocument } from "@uaf/core";
 import {
   createUafHtml,
   createUafPdfFromHtml,
@@ -170,7 +170,7 @@ program
 
 program
   .command("validate")
-  .description("Validate a UAF PDF (embedded payload + single page)")
+  .description("Validate a UAF PDF and its embedded multi-assignment payload")
   .argument("<pdf>", "Input PDF path")
   .action(async (pdfPath: string) => {
     try {
@@ -239,7 +239,7 @@ function parseTags(value: string | undefined): string[] {
     : [];
 }
 
-async function readPayload(opts: PayloadInputOptions): Promise<UafPayload> {
+async function readPayload(opts: PayloadInputOptions): Promise<UafDocument> {
   if (opts.from) {
     return parsePayload(await readFile(resolve(opts.from), "utf-8"));
   }
@@ -248,16 +248,16 @@ async function readPayload(opts: PayloadInputOptions): Promise<UafPayload> {
     throw new Error("--subject, --date, and --content are required unless --from is used");
   }
 
-  return {
+  return [{
     subject: opts.subject,
     date: opts.date,
     content: opts.content,
     tags: parseTags(opts.tags),
-  };
+  }];
 }
 
 async function createPdf(
-  payload: UafPayload,
+  payload: UafDocument,
   opts: { renderer?: string; dateDisplay?: string },
 ): Promise<Uint8Array> {
   const renderer = parseRenderer(opts.renderer ?? DEFAULT_RENDERER);

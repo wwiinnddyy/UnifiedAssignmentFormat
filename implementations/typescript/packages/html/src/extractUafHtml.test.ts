@@ -1,36 +1,27 @@
 import { describe, expect, it } from "vitest";
-import { UafError, UafErrorCode, type UafPayload } from "@uaf/core";
-import { createUafHtml } from "./createUafHtml.js";
-import {
-  extractUafPayloadCsvFromHtml,
-  extractUafPayloadFromHtml,
-} from "./extractUafHtml.js";
+import { UafError, UafErrorCode, type UafDocument } from "@uaf/core";
+import { renderUafHtml } from "./renderHtml.js";
+import { extractUafPayloadCsvFromHtml, extractUafPayloadFromHtml } from "./extractUafHtml.js";
 
-const payload: UafPayload = {
-  subject: "数学 & 几何",
-  date: "2026-05-19",
-  content: "完成 <第1题>\n拍照上传 & 备注",
-  tags: ["必做", "A&B"],
-};
+const document: UafDocument = [
+  { subject: "Math & Geometry", date: "2026-05-19", content: "Work", tags: ["required"] },
+  { subject: "English", date: "2026-05-19", content: "Read", tags: [] },
+];
 
 describe("extractUafPayloadFromHtml", () => {
-  it("round-trips the embedded CSV payload from generated HTML", () => {
-    const html = createUafHtml(payload);
-
-    expect(extractUafPayloadFromHtml(html)).toEqual(payload);
-    expect(extractUafPayloadCsvFromHtml(html)).toContain("subject,date,content,tags");
+  it("restores all assignments", () => {
+    const html = renderUafHtml(document);
+    expect(extractUafPayloadFromHtml(html)).toEqual(document);
+    expect(extractUafPayloadCsvFromHtml(html)).toContain("English");
   });
 
-  it("throws a UAF no-payload error when the template is missing", () => {
-    expect(() => extractUafPayloadFromHtml("<!DOCTYPE html><html></html>")).toThrow(
-      UafError,
-    );
-
+  it("reports missing payload templates", () => {
     try {
       extractUafPayloadFromHtml("<!DOCTYPE html><html></html>");
-    } catch (e) {
-      expect(e).toBeInstanceOf(UafError);
-      expect((e as UafError).code).toBe(UafErrorCode.NoPayload);
+      throw new Error("Expected extraction to fail");
+    } catch (error) {
+      expect(error).toBeInstanceOf(UafError);
+      expect((error as UafError).code).toBe(UafErrorCode.NoPayload);
     }
   });
 });

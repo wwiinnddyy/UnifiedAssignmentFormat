@@ -6,7 +6,7 @@ function isValidIso8601(value: string): boolean {
   return !Number.isNaN(parsed);
 }
 
-export const uafPayloadSchema = z.object({
+export const uafAssignmentSchema = z.object({
   subject: z
     .string()
     .min(1, "subject must not be empty")
@@ -29,3 +29,7 @@ export const uafPayloadSchema = z.object({
     )
     .max(LIMITS.tagCountMax, `at most ${LIMITS.tagCountMax} tags allowed`),
 });
+
+export const uafDocumentSchema = z
+  .array(uafAssignmentSchema)
+  .min(1, "document must contain at least one assignment");

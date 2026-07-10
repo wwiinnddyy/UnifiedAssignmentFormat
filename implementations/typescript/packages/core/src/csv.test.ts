@@ -1,79 +1,69 @@
 import { describe, expect, it } from "vitest";
 import { UafError, UafErrorCode } from "./errors.js";
-import { parsePayload, serializePayload } from "./csv.js";
+import { parsePayload, serializePayload, validatePayload } from "./csv.js";
+import type { UafDocument } from "./types.js";
+
+const document: UafDocument = [
+  {
+    subject: "Math",
+    date: "2026-05-19",
+    content: 'Complete exercises 1, 2 and say "done".',
+    tags: ["required", "geometry"],
+  },
+  {
+    subject: "Chinese",
+    date: "2026-05-19",
+    content: "Read the poem\nCopy the second paragraph",
+    tags: [],
+  },
+];
 
 describe("serializePayload / parsePayload", () => {
-  it("round-trips simple payload", () => {
-    const payload = {
-      subject: "数学",
-      date: "2026-05-19",
-      content: "完成课本第45页第1、2题，请拍照上传。",
-      tags: ["必做", "几何"],
-    };
-    const csv = serializePayload(payload);
-    expect(parsePayload(csv)).toEqual(payload);
+  it("round-trips multiple assignments in source order", () => {
+    const csv = serializePayload(document);
+    expect(parsePayload(csv)).toEqual(document);
+    expect(csv.split("\n")[0]).toBe("subject,date,content,tags");
   });
 
-  it("handles multiline content", () => {
-    const payload = {
-      subject: "语文",
-      date: "2026-05-19",
-      content: "背诵《静夜思》\n第二段抄写生字",
-      tags: ["必做"],
-    };
-    const csv = serializePayload(payload);
-    expect(parsePayload(csv)).toEqual(payload);
+  it("keeps single-assignment documents valid", () => {
+    const single: UafDocument = [document[0]];
+    expect(parsePayload(serializePayload(single))).toEqual(single);
   });
 
-  it("handles empty tags", () => {
-    const payload = {
-      subject: "英语",
-      date: "2026-05-19",
-      content: "朗读课文 Unit 3",
-      tags: [] as string[],
-    };
-    const csv = serializePayload(payload);
-    expect(parsePayload(csv)).toEqual(payload);
+  it("handles multiline content, commas, and quotes", () => {
+    const csv = serializePayload(document);
+    expect(csv).toContain('"Read the poem\nCopy the second paragraph"');
+    expect(csv).toContain('""done""');
+    expect(parsePayload(csv)).toEqual(document);
   });
 
-  it("escapes commas and quotes in content", () => {
-    const payload = {
-      subject: "数学",
-      date: "2026-05-19",
-      content: 'Say "hello", world',
-      tags: [] as string[],
-    };
-    const csv = serializePayload(payload);
-    expect(csv).toContain('""hello""');
-    expect(parsePayload(csv)).toEqual(payload);
+  it("rejects a header without assignments", () => {
+    expect(() => parsePayload("subject,date,content,tags\n")).toThrow(UafError);
+    expect(() => validatePayload([])).toThrow(UafError);
   });
 
-  it("rejects invalid date", () => {
-    const csv = `subject,date,content,tags
-数学,not-a-date,作业内容,`;
-    expect(() => parsePayload(csv)).toThrow(UafError);
+  it("identifies the invalid row", () => {
+    const csv = `subject,date,content,tags\nMath,2026-05-19,Work,\nChinese,not-a-date,Read,`;
     try {
       parsePayload(csv);
-    } catch (e) {
-      expect((e as UafError).code).toBe(UafErrorCode.InvalidPayload);
+      throw new Error("Expected parsePayload to fail");
+    } catch (error) {
+      expect(error).toBeInstanceOf(UafError);
+      expect((error as UafError).code).toBe(UafErrorCode.InvalidPayload);
+      expect((error as Error).message).toContain("Row 3");
     }
   });
 
-  it("rejects tag with semicolon", () => {
+  it("rejects tags containing semicolons", () => {
     expect(() =>
-      serializePayload({
-        subject: "数学",
-        date: "2026-05-19",
-        content: "作业",
-        tags: ["a;b"],
-      }),
-    ).toThrow();
-  });
-
-  it("rejects extra data rows", () => {
-    const csv = `subject,date,content,tags
-数学,2026-05-19,作业,
-数学,2026-05-20,作业2,`;
-    expect(() => parsePayload(csv)).toThrow(UafError);
+      serializePayload([
+        {
+          subject: "Math",
+          date: "2026-05-19",
+          content: "Work",
+          tags: ["a;b"],
+        },
+      ]),
+    ).toThrow(UafError);
   });
 });

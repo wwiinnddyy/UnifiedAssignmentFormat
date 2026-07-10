@@ -6,7 +6,7 @@
 
 HTML 渲染器是 TypeScript 参考实现的默认 PDF 导出路径，也是 UAF 的可预览展示中间层：
 
-1. 将 [`UafPayload`](./csv-schema.md#6-逻辑层映射) 渲染为**自包含的 HTML 文档**（含内联 CSS）。
+1. 将 [`UafDocument`](./csv-schema.md#6-多记录与逻辑层映射) 渲染为**自包含的 HTML 文档**（含内联 CSS）。
 2. 用户可直接在浏览器中打开 HTML 并打印为 PDF。
 3. 可选地，通过 Puppeteer（无头 Chromium）或系统 Chrome/Edge 的 headless print-to-pdf 自动将 HTML 转为 PDF，并用 `pdf-lib` 嵌入 `uaf_payload.csv` 附件。
 
@@ -23,7 +23,7 @@ HTML 渲染器是 TypeScript 参考实现的默认 PDF 导出路径，也是 UAF
 - 所有 CSS 必须内联在 `<style>` 标签中，**不得引用外部样式表**。
 - 不得依赖外部图像或字体文件（使用系统字体栈）。
 - 应在 `<body>` 末尾包含一个 inert 的 `<template id="uaf-payload-csv" data-filename="uaf_payload.csv">`，其文本内容为 HTML 转义后的标准 UAF CSV payload，便于 HTML 展示文件保持自包含与可审计。
-- HTML 解析器可从该 template 中解码 CSV，并按标准 CSV Schema 恢复 `UafPayload`。
+- HTML 解析器可从该 template 中解码多行 CSV，并按标准 CSV Schema 恢复完整 `UafDocument`。
 - HTML 校验器应验证 template 存在、CSV 可解析且 payload 满足标准 Schema。
 
 ### 2.2 页面尺寸
@@ -33,7 +33,7 @@ HTML 渲染器是 TypeScript 参考实现的默认 PDF 导出路径，也是 UAF
 | 纸张 | A4 |
 | 方向 | 纵向（Portrait） |
 | 宽度 | `210mm` |
-| 高度 | `297mm`（最小高度，内容不超出单页） |
+| 高度 | 每页 `297mm`，内容超出时自动分页 |
 | 页数 | **1**（禁止分页） |
 
 CSS 控制方式：
@@ -172,9 +172,11 @@ font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
 | 页眉 | 空 |
 | 页脚 | 空 |
 
-### 5.2 单页约束
+### 5.2 分页约束
 
-- 内容量必须控制在单页 A4 内。
+- 卡片使用两列流式布局，并设置 `break-inside: avoid`。
+- 单项正文过长时拆成带 `（续）` 标识的卡片，标签只出现在最后一段。
+- 每页均须显示 UAF 水印。
 - 若正文过长超出页面，允许浏览器自动缩小，但鼓励实现层做内容截断提示。
 
 ## 6. HTML → PDF 自动化转换

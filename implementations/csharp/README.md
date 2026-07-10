@@ -6,26 +6,25 @@
 
 | 模块 | 职责 |
 |------|------|
-| `UafPayload` | 不可变作业载荷包装；构造时校验 subject/date/content/tags 约束 |
+| `UafAssignment` / `UafDocument` | 作业记录与非空有序作业集合；逐项校验字段约束 |
 | `UafCsv` | UTF-8 / RFC 4180 CSV 序列化与反序列化 |
 | `UafHtml` | 自包含 A4 作业卡片 HTML 渲染；从 `<template id="uaf-payload-csv">` 回读 payload |
-| `UafPdf` | 单页作业卡片 PDF 生成；嵌入并读取 `uaf_payload.csv` 附件 |
+| `UafPdf` | 多卡片、可分页 PDF 生成；嵌入并读取多行 `uaf_payload.csv` 附件 |
 | `UafArtifactPackage` | `.uaf` 目录和 `.uaf.zip` 的导出、读取、manifest 校验、SHA-256 完整性校验 |
 
 ## 基本 API
 
 ```csharp
-var payload = new UafPayload(
-    subject: "数学",
-    date: "2026-05-19",
-    content: "完成课本第45页第1、2题，请拍照上传。",
-    tags: ["必做", "几何", "重难点"]);
+var payload = new UafDocument([
+    new UafAssignment("数学", "2026-05-19", "完成课本第45页第1、2题。", ["必做"]),
+    new UafAssignment("语文", "2026-05-19", "背诵古诗并完成仿写。", ["背诵"])
+]);
 
 string csv = UafCsv.Serialize(payload);
-UafPayload fromCsv = UafCsv.Parse(csv);
+UafDocument fromCsv = UafCsv.Parse(csv);
 
-byte[] UafPdf.Create(UafPayload payload);
-UafPayload fromPdf = UafPdf.ExtractPayload(pdfBytes);
+byte[] pdfBytes = UafPdf.Create(payload);
+UafDocument fromPdf = UafPdf.ExtractPayload(pdfBytes);
 
 var package = UafArtifactPackage.Create(payload);
 package.WriteDirectory("sample-homework.uaf");

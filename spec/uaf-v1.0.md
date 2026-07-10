@@ -2,7 +2,7 @@
 
 ## 1. 概述
 
-UAF（Unified Assignment Format）是一种面向家校作业场景的文件交换标准。单个 `.pdf` 文件同时承载：
+UAF（Unified Assignment Format）是一种面向家校作业场景的文件交换标准。单个 `.pdf` 文件同时承载一至多项作业：
 
 - **展示层（表）**：人类可读的「作业看板卡片」，在任何 PDF 阅读器中均可正常查看与打印。
 - **数据层（里）**：机器可读的结构化载荷，以 `uaf_payload.csv` 形式嵌入 PDF 附件，供平台零 OCR 解析。
@@ -21,7 +21,7 @@ UAF（Unified Assignment Format）是一种面向家校作业场景的文件交�
 ## 3. 文件格式
 
 - **扩展名**：`.pdf`
-- **页数**：v1.0 严格要求 **单页**
+- **页数**：至少 1 页；卡片在当前页放不下时自动续页，仍保持为一个 PDF 文件
 - **目标档案格式**：PDF/A-3（v1.0 参考实现以功能合规为先，完整 conformance 见路线图）
 - **内嵌附件**：见 [csv-schema.md](./csv-schema.md) 与本文第 5 节
 
@@ -41,7 +41,7 @@ UAF（Unified Assignment Format）是一种面向家校作业场景的文件交�
 
 ## 4. 数据 Schema
 
-UAF v1.0 仅包含四个扁平字段，详见 [csv-schema.md](./csv-schema.md)：
+UAF v1.0 的每条作业记录包含四个扁平字段；CSV 可包含多条记录，详见 [csv-schema.md](./csv-schema.md)：
 
 | 字段 | 说明 |
 |------|------|
@@ -71,7 +71,7 @@ Catalog → /Names → /EmbeddedFiles → 名称树 → FileSpec(UF: uaf_payload
 
 ## 6. 视觉规范
 
-单页电子看板卡片版式见 [visual-spec.md](./visual-spec.md)。
+多卡片电子看板版式与分页规则见 [visual-spec.md](./visual-spec.md)。
 
 视觉规范 additionally 包含：
 
@@ -86,9 +86,9 @@ Catalog → /Names → /EmbeddedFiles → 名称树 → FileSpec(UF: uaf_payload
 
 参考实现的导出 Pipeline：
 
-1. 平台或 SDK 生成/接收 `UafPayload`
-2. 将 payload 序列化为 CSV，并渲染为自包含 HTML 展示文件
-3. 使用浏览器打印管线将 HTML 转为单页 PDF
+1. 平台或 SDK 生成/接收非空 `UafDocument`
+2. 将全部 assignment 按顺序序列化为多行 CSV，并渲染为自包含 HTML 展示文件
+3. 使用浏览器打印管线将 HTML 转为一至多页 PDF
 4. 使用 `pdf-lib` 将同一份 `uaf_payload.csv` 嵌入 PDF 附件
 5. 对 HTML 与 PDF 分别执行 validate，确保二者可恢复同一 payload
 
@@ -98,7 +98,7 @@ Catalog → /Names → /EmbeddedFiles → 名称树 → FileSpec(UF: uaf_payload
 |------|----------|
 | 无 `/EmbeddedFiles` 或缺少 `uaf_payload.csv` | 视为普通 PDF，仅展示层可用 |
 | 附件存在但 CSV 非法 | UAF 损坏，返回校验错误 |
-| 页数 ≠ 1 | v1.0 不合规（validate 可警告） |
+| 页数 < 1 | UAF 损坏，返回校验错误 |
 | HTML 缺少 `uaf-payload-csv` template | 视为普通 HTML，仅展示层可用 |
 
 ## 9. 版本与兼容

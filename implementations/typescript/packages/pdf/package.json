@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "import": "./dist/browser.js"
     }
   },
   "files": [
@@ -17,13 +21,16 @@
     "assets"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm --clean --external @uaf/core --external pdf-lib --external @pdf-lib/fontkit --external @fontsource/noto-sans-sc --external subset-font && tsc -p tsconfig.build.json",
+    "build": "tsup src/index.ts src/browser.ts --format esm --clean --external @uaf/core --external pdf-lib --external @pdf-lib/fontkit --external @fontsource/noto-sans-sc --external subset-font && tsc -p tsconfig.build.json",
+    "build:browser-dist": "tsup --config tsup.browser.config.ts",
+    "sync:browser-assets": "node scripts/sync-browser-assets.mjs",
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
     "@fontsource/noto-sans-sc": "^5.2.5",
     "@pdf-lib/fontkit": "^1.1.1",
     "@uaf/core": "workspace:*",
+    "harfbuzzjs": "^0.4.15",
     "pdf-lib": "^1.17.1",
     "subset-font": "2.4.0"
   },

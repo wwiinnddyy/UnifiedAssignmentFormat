@@ -1,6 +1,6 @@
 # 统一作业展示与交换格式 (UAF)
 
-UAF v1.0 将作业信息编码为 **单页 PDF 作业卡片**（人类可读），并在 PDF 内嵌 `uaf_payload.csv`（机器可读），实现「表里合一、无缝降级」。
+UAF v1.0 将一组作业信息编码为 **多卡片 PDF**（人类可读，空间不足时自动分页），并在 PDF 内嵌包含全部记录的 `uaf_payload.csv`（机器可读），实现「表里合一、无缝降级」。
 
 本仓库是 **标准 + 多语言实现** 的集合：规范与共享样例在根目录；各语言的 SDK/CLI 在 [`implementations/`](./implementations/) 下独立维护。
 
@@ -46,7 +46,7 @@ pnpm run read:sample-package
 
 1. 用户上传 `.pdf`
 2. 解析器从 PDF Catalog 的 `/EmbeddedFiles` 读取 `uaf_payload.csv`（**禁止 OCR**）
-3. 按 [csv-schema.md](./spec/csv-schema.md) 解析四字段，映射至平台作业模型
+3. 按 [csv-schema.md](./spec/csv-schema.md) 逐行解析四字段，按原顺序映射至平台作业集合
 
 ## 许可证
 

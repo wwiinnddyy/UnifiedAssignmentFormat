@@ -10,32 +10,42 @@ public static class UafPdf
     private const double PageHeight = 841.89;
     private static readonly byte[] PdfHeader = Encoding.ASCII.GetBytes("%PDF-");
 
-    public static byte[] Create(UafPayload payload)
+    public static byte[] Create(UafDocument payload)
     {
         ArgumentNullException.ThrowIfNull(payload);
 
         var csvBytes = UafCsv.SerializeToUtf8(payload);
-        var contentBytes = Encoding.ASCII.GetBytes(RenderPageContent(payload));
         var fileNameUtf16Hex = ToUtf16Hex(UafConstants.PayloadFileName);
-
+        var fragments = ExpandAssignments(payload);
+        var pageGroups = fragments.Chunk(4).ToArray();
+        var fontObject = 3 + pageGroups.Length * 2;
+        var cidObject = fontObject + 1;
+        var embeddedObject = fontObject + 2;
+        var fileSpecObject = fontObject + 3;
+        var descriptorObject = fontObject + 4;
+        var kids = string.Join(" ", Enumerable.Range(0, pageGroups.Length).Select(i => $"{3 + i * 2} 0 R"));
         var objects = new List<byte[]>
         {
-            Obj("<< /Type /Catalog /Pages 2 0 R /Names << /EmbeddedFiles << /Names [(uaf_payload.csv) 8 0 R] >> >> /AF [8 0 R] >>"),
-            Obj("<< /Type /Pages /Count 1 /Kids [3 0 R] >>"),
-            Obj("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>"),
-            StreamObj("<< /Length " + contentBytes.Length.ToString(CultureInfo.InvariantCulture) + " >>", contentBytes),
-            Obj("<< /Type /Font /Subtype /Type0 /BaseFont /STSong-Light /Encoding /UniGB-UCS2-H /DescendantFonts [6 0 R] >>"),
-            Obj("<< /Type /Font /Subtype /CIDFontType0 /BaseFont /STSong-Light /CIDSystemInfo << /Registry (Adobe) /Ordering (GB1) /Supplement 2 >> /FontDescriptor 10 0 R >>"),
-            StreamObj("<< /Type /EmbeddedFile /Subtype /text#2Fcsv /Params << /Size " + csvBytes.Length.ToString(CultureInfo.InvariantCulture) + " >> /Length " + csvBytes.Length.ToString(CultureInfo.InvariantCulture) + " >>", csvBytes),
-            Obj("<< /Type /Filespec /F (uaf_payload.csv) /UF <" + fileNameUtf16Hex + "> /Desc (UAF v1.0 payload) /AFRelationship /Data /EF << /F 7 0 R /UF 7 0 R >> >>"),
-            Obj("<< /Type /Metadata /Subtype /XML /Length 0 >>"),
-            Obj("<< /Type /FontDescriptor /FontName /STSong-Light /Flags 4 /FontBBox [-200 -250 1000 880] /ItalicAngle 0 /Ascent 880 /Descent -120 /CapHeight 700 /StemV 80 >>")
+            Obj($"<< /Type /Catalog /Pages 2 0 R /Names << /EmbeddedFiles << /Names [(uaf_payload.csv) {fileSpecObject} 0 R] >> >> /AF [{fileSpecObject} 0 R] >>"),
+            Obj($"<< /Type /Pages /Count {pageGroups.Length} /Kids [{kids}] >>")
         };
+        for (var index = 0; index < pageGroups.Length; index++)
+        {
+            var contentBytes = Encoding.ASCII.GetBytes(RenderGridPage(pageGroups[index]));
+            var contentObject = 4 + index * 2;
+            objects.Add(Obj($"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 {fontObject} 0 R >> >> /Contents {contentObject} 0 R >>"));
+            objects.Add(StreamObj("<< /Length " + contentBytes.Length.ToString(CultureInfo.InvariantCulture) + " >>", contentBytes));
+        }
+        objects.Add(Obj($"<< /Type /Font /Subtype /Type0 /BaseFont /STSong-Light /Encoding /UniGB-UCS2-H /DescendantFonts [{cidObject} 0 R] >>"));
+        objects.Add(Obj($"<< /Type /Font /Subtype /CIDFontType0 /BaseFont /STSong-Light /CIDSystemInfo << /Registry (Adobe) /Ordering (GB1) /Supplement 2 >> /FontDescriptor {descriptorObject} 0 R >>"));
+        objects.Add(StreamObj("<< /Type /EmbeddedFile /Subtype /text#2Fcsv /Params << /Size " + csvBytes.Length.ToString(CultureInfo.InvariantCulture) + " >> /Length " + csvBytes.Length.ToString(CultureInfo.InvariantCulture) + " >>", csvBytes));
+        objects.Add(Obj($"<< /Type /Filespec /F (uaf_payload.csv) /UF <{fileNameUtf16Hex}> /Desc (UAF v1.0 multi-assignment payload) /AFRelationship /Data /EF << /F {embeddedObject} 0 R /UF {embeddedObject} 0 R >> >>"));
+        objects.Add(Obj("<< /Type /FontDescriptor /FontName /STSong-Light /Flags 4 /FontBBox [-200 -250 1000 880] /ItalicAngle 0 /Ascent 880 /Descent -120 /CapHeight 700 /StemV 80 >>"));
 
         return WritePdf(objects);
     }
 
-    public static UafPayload ExtractPayload(byte[] pdfBytes)
+    public static UafDocument ExtractPayload(byte[] pdfBytes)
     {
         return UafCsv.Parse(ExtractPayloadCsv(pdfBytes));
     }
@@ -118,7 +128,75 @@ public static class UafPdf
         return output.ToArray();
     }
 
-    private static string RenderPageContent(UafPayload payload)
+    private static IReadOnlyList<UafAssignment> ExpandAssignments(UafDocument document)
+    {
+        var fragments = new List<UafAssignment>();
+        foreach (var assignment in document)
+        {
+            const int limit = 420;
+            for (var index = 0; index < assignment.Content.Length; index += limit)
+            {
+                var content = assignment.Content.Substring(index, Math.Min(limit, assignment.Content.Length - index));
+                var final = index + limit >= assignment.Content.Length;
+                fragments.Add(new UafAssignment(
+                    assignment.Subject + (index > 0 ? "（续）" : string.Empty),
+                    assignment.Date,
+                    content,
+                    final ? assignment.Tags : []));
+            }
+        }
+        return fragments;
+    }
+
+    private static string RenderGridPage(IReadOnlyList<UafAssignment> assignments)
+    {
+        const double margin = 36;
+        const double gap = 14;
+        const double cardWidth = (PageWidth - margin * 2 - gap) / 2;
+        const double cardHeight = 340;
+        var builder = new StringBuilder();
+        builder.AppendLine("q 0.973 0.980 0.988 rg 0 0 595.28 841.89 re f Q");
+        for (var index = 0; index < assignments.Count; index++)
+        {
+            var assignment = assignments[index];
+            var column = index % 2;
+            var row = index / 2;
+            var x = margin + column * (cardWidth + gap);
+            var y = PageHeight - margin - cardHeight - row * (cardHeight + gap);
+            builder.AppendLine("q 0.80 0.84 0.89 rg");
+            builder.AppendLine(RoundedRectPath(x + 2, y - 2, cardWidth, cardHeight, 12));
+            builder.AppendLine("f Q q 1 1 1 rg");
+            builder.AppendLine(RoundedRectPath(x, y, cardWidth, cardHeight, 12));
+            builder.AppendLine("f Q q 0.145 0.388 0.922 rg");
+            builder.AppendLine(RoundedRectPath(x, y + cardHeight - 52, cardWidth, 52, 12));
+            builder.AppendLine("f Q");
+            AppendText(builder, assignment.Subject, x + 14, y + cardHeight - 25, 17, "#FFFFFF");
+            AppendText(builder, FormatDateZh(assignment.Date), x + 14, y + cardHeight - 42, 9.5, "#DBEAFE");
+            var layout = FitContent(assignment.Content, cardWidth - 28, cardHeight - 102);
+            var lineY = y + cardHeight - 76;
+            foreach (var line in layout.Lines)
+            {
+                AppendText(builder, line, x + 14, lineY, layout.FontSize, "#0F172A");
+                lineY -= layout.LineHeight;
+            }
+            var tagX = x + 14;
+            foreach (var tag in assignment.Tags.Take(4))
+            {
+                var tagWidth = Math.Min(EstimateTextWidth(tag, 9.5) + 16, cardWidth - 28);
+                builder.AppendLine("q 0.878 0.906 1 rg");
+                builder.AppendLine(RoundedRectPath(tagX, y + 13, tagWidth, 19, 9.5));
+                builder.AppendLine("f Q");
+                AppendText(builder, tag, tagX + 8, y + 18, 9.5, "#3730A3");
+                tagX += tagWidth + 6;
+                if (tagX > x + cardWidth - 30) break;
+            }
+        }
+        const string watermark = "使用 UAF v1.0 导出";
+        AppendText(builder, watermark, PageWidth - margin - EstimateTextWidth(watermark, 9), margin - 4, 9, "#94A3B8");
+        return builder.ToString();
+    }
+
+    private static string RenderPageContent(UafAssignment payload)
     {
         const double margin = 40;
         const double cardX = margin;

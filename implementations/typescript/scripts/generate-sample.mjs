@@ -9,12 +9,26 @@ async function main() {
   const { createUafHtml, createUafPdfFromHtml } = await import("../packages/html/dist/index.js");
   const { serializePayload } = await import("../packages/core/dist/index.js");
 
-  const payload = {
-    subject: "数学",
-    date: "2026-05-19",
-    content: "完成课本第45页第1、2题，请拍照上传。",
-    tags: ["必做", "几何", "重难点"],
-  };
+  const payload = [
+    {
+      subject: "数学",
+      date: "2026-05-19",
+      content: "完成课本第45页第1、2题，请拍照上传。",
+      tags: ["必做", "几何", "重难点"],
+    },
+    {
+      subject: "语文",
+      date: "2026-05-19",
+      content: "背诵《静夜思》，完成第二段仿写。",
+      tags: ["背诵"],
+    },
+    {
+      subject: "英语",
+      date: "2026-05-19",
+      content: "朗读课文 Unit 3 并完成练习册。",
+      tags: [],
+    },
+  ];
 
   const csv = serializePayload(payload);
   const html = createUafHtml(payload);

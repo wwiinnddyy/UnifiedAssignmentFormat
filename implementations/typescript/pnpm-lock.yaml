@@ -75,6 +75,9 @@ importers:
       '@uaf/core':
         specifier: workspace:*
         version: link:../core
+      harfbuzzjs:
+        specifier: ^0.4.15
+        version: 0.4.15
       pdf-lib:
         specifier: ^1.17.1
         version: 1.17.1

@@ -1,15 +1,15 @@
-import type { UafPayload } from "@uaf/core";
+import type { UafDocument } from "@uaf/core";
 import { extractUafPayloadFromHtml } from "./extractUafHtml.js";
 
 export interface UafHtmlValidationResult {
   valid: boolean;
-  payload?: UafPayload;
+  payload?: UafDocument;
   errors: string[];
 }
 
 export function validateUafHtml(html: string): UafHtmlValidationResult {
   const errors: string[] = [];
-  let payload: UafPayload | undefined;
+  let payload: UafDocument | undefined;
 
   try {
     payload = extractUafPayloadFromHtml(html);

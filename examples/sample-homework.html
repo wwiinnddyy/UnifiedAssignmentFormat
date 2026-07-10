@@ -3,133 +3,73 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UAF - 数学</title>
+<title>UAF - 作业</title>
 <style>
-@page {
-  size: A4 portrait;
-  margin: 0;
-}
-
+@page { size: A4 portrait; margin: 36pt 36pt 58pt; }
 @media print {
-  body {
-    margin: 0;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
+  body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .watermark { position: fixed; }
 }
-
-* {
-  box-sizing: border-box;
-}
-
-html, body {
-  margin: 0;
-  padding: 0;
-}
-
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
 body {
-  width: 210mm;
-  min-height: 297mm;
   background: #F8FAFC;
-  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "WenQuanYi Micro Hei", sans-serif;
   color: #0F172A;
-  position: relative;
-  padding: 40pt;
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
-
+.document {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14pt;
+  align-items: start;
+}
 .card {
+  break-inside: avoid;
   background: #FFFFFF;
   border: 1pt solid #E2E8F0;
   border-radius: 16pt;
   box-shadow: 0 2pt 8pt rgba(148, 163, 184, 0.15);
-  width: 100%;
-  padding: 24pt;
+  overflow: hidden;
 }
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16pt;
-}
-
-.subject-pill {
-  display: inline-block;
-  background: #2563EB;
-  color: #FFFFFF;
-  font-size: 14pt;
-  line-height: 1;
-  padding: 8pt 16pt;
-  border-radius: 9999pt;
-  font-weight: 500;
-}
-
-.date-pill {
-  display: inline-block;
-  background: #F1F5F9;
-  color: #334155;
-  font-size: 12pt;
-  line-height: 1;
-  padding: 6pt 12pt;
-  border-radius: 9999pt;
-}
-
-.divider {
-  height: 1pt;
-  background: #E2E8F0;
-  margin-bottom: 20pt;
-}
-
-.content {
-  font-size: 22pt;
-  line-height: 1.5;
-  color: #0F172A;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8pt;
-  margin-top: 20pt;
-}
-
-.tag-chip {
-  display: inline-block;
-  background: #E0E7FF;
-  color: #3730A3;
-  font-size: 11pt;
-  line-height: 1;
-  padding: 5pt 10pt;
-  border-radius: 9999pt;
-}
-
-.watermark {
-  position: absolute;
-  right: 40pt;
-  bottom: 40pt;
-  font-size: 10pt;
-  color: #94A3B8;
-  opacity: 0.5;
-  pointer-events: none;
-  user-select: none;
-}
+.header { background: #2563EB; padding: 12pt 14pt; }
+.subject-pill { display: block; color: #FFFFFF; font-size: 17pt; font-weight: 600; overflow-wrap: anywhere; }
+.date-pill { display: block; color: #DBEAFE; font-size: 9.5pt; margin-top: 3pt; }
+.content { padding: 16pt 14pt 12pt; font-size: 13.5pt; line-height: 1.42; overflow-wrap: anywhere; }
+.tags { display: flex; flex-wrap: wrap; gap: 6pt; padding: 0 14pt 14pt; }
+.tag-chip { background: #E0E7FF; color: #3730A3; font-size: 9.5pt; padding: 4pt 8pt; border-radius: 9999pt; }
+.continued { color: #64748B; font-size: 9.5pt; padding: 0 14pt 14pt; }
+.watermark { right: 36pt; bottom: 30pt; color: #94A3B8; opacity: .65; font-size: 9pt; }
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="header">
+<main class="document"><article class="card">
+  <header class="header">
     <span class="subject-pill">数学</span>
     <span class="date-pill">2026年5月19日</span>
-  </div>
-  <div class="divider"></div>
+  </header>
   <div class="content">完成课本第45页第1、2题，请拍照上传。</div>
   <div class="tags"><span class="tag-chip">必做</span><span class="tag-chip">几何</span><span class="tag-chip">重难点</span></div>
-</div>
+</article>
+<article class="card">
+  <header class="header">
+    <span class="subject-pill">语文</span>
+    <span class="date-pill">2026年5月19日</span>
+  </header>
+  <div class="content">背诵《静夜思》，完成第二段仿写。</div>
+  <div class="tags"><span class="tag-chip">背诵</span></div>
+</article>
+<article class="card">
+  <header class="header">
+    <span class="subject-pill">英语</span>
+    <span class="date-pill">2026年5月19日</span>
+  </header>
+  <div class="content">朗读课文 Unit 3 并完成练习册。</div>
+</article></main>
 <div class="watermark">使用 UAF v1.0 导出</div>
 <template id="uaf-payload-csv" data-filename="uaf_payload.csv">subject,date,content,tags
 数学,2026-05-19,完成课本第45页第1、2题，请拍照上传。,必做;几何;重难点
+语文,2026-05-19,背诵《静夜思》，完成第二段仿写。,背诵
+英语,2026-05-19,朗读课文 Unit 3 并完成练习册。,
 </template>
 </body>
 </html>
