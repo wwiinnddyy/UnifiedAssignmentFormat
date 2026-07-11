@@ -1,11 +1,13 @@
 import { parsePayload, type UafDocument } from "@uaf/core";
 import { createUafPdfWithFont } from "./createUafPdfBase.js";
 import { collectDocumentText, subsetFontInBrowser } from "./browserSubset.js";
+import type { UafPdfTheme } from "./renderCard.js";
 
 export interface CreateUafPdfBrowserOptions {
   fontBytes?: Uint8Array;
   fontUrl?: string | URL;
   wasmUrl?: string | URL;
+  theme?: UafPdfTheme;
 }
 
 let cachedFontBytes: Uint8Array | undefined;
@@ -27,7 +29,11 @@ export async function createUafPdf(
   const fontBytes = await loadBrowserFont(options);
   const wasmUrl = options.wasmUrl ?? new URL("../assets/hb-subset.wasm", import.meta.url);
   const subset = await subsetFontInBrowser(fontBytes, collectDocumentText(document), wasmUrl);
-  return createUafPdfWithFont(document, { fontBytes: subset, subsetFont: false });
+  return createUafPdfWithFont(document, {
+    fontBytes: subset,
+    subsetFont: false,
+    theme: options.theme,
+  });
 }
 
 export async function createUafPdfFromCsv(
@@ -39,3 +45,4 @@ export async function createUafPdfFromCsv(
 
 export { extractUafPayload, extractUafPayloadCsv } from "./extractUafPayload.js";
 export { validateUafPdf } from "./validateUafPdf.js";
+export type { UafPdfTheme } from "./renderCard.js";

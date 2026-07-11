@@ -7,11 +7,13 @@ import {
   type UafDocument,
 } from "@uaf/core";
 import { renderAssignmentDocument } from "./renderCard.js";
+import type { UafPdfTheme } from "./renderCard.js";
 
 export interface CreateUafPdfBaseOptions {
   fontBytes?: Uint8Array;
   useStandardFont?: boolean;
   subsetFont?: boolean;
+  theme?: UafPdfTheme;
 }
 
 export async function createUafPdfWithFont(
@@ -34,6 +36,7 @@ export async function createUafPdfWithFont(
   renderAssignmentDocument(pdfDoc, validated, font, font, {
     dateDisplay: options.useStandardFont ? "iso" : "zh",
     canRenderCjk: !options.useStandardFont,
+    theme: options.theme,
   });
 
   await pdfDoc.attach(csvBytes, UAF_PAYLOAD_FILENAME, {
