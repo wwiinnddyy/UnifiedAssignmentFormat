@@ -22,9 +22,10 @@ HTML 渲染器是 TypeScript 参考实现的默认 PDF 导出路径，也是 UAF
 - 必须是完整的、有效的 **HTML5 文档**（含 `<!DOCTYPE html>`）。
 - 所有 CSS 必须内联在 `<style>` 标签中，**不得引用外部样式表**。
 - 不得依赖外部图像或字体文件（使用系统字体栈）。
+- 不得包含脚本、iframe/object/embed、事件处理属性（`on*`）、自动跳转或其他活动/外部加载内容。
 - 应在 `<body>` 末尾包含一个 inert 的 `<template id="uaf-payload-csv" data-filename="uaf_payload.csv">`，其文本内容为 HTML 转义后的标准 UAF CSV payload，便于 HTML 展示文件保持自包含与可审计。
 - HTML 解析器可从该 template 中解码多行 CSV，并按标准 CSV Schema 恢复完整 `UafDocument`。
-- HTML 校验器应验证 template 存在、CSV 可解析且 payload 满足标准 Schema。
+- HTML 校验器应验证 template 存在、CSV 可解析且 payload 满足标准 Schema，并确认可见卡片中的科目、日期、正文、标签和续卡提示与该 payload 一致。
 
 ### 2.2 页面尺寸
 
@@ -175,7 +176,8 @@ font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
 ### 5.2 分页约束
 
 - 卡片使用两列流式布局，并设置 `break-inside: avoid`。
-- 单项正文过长时拆成带 `（续）` 标识的卡片，标签只出现在最后一段。
+- 单项正文过长时拆成带 `（续）` 标识的卡片，正文续卡不重复标签。
+- 标签超过两行时追加标签续卡；每张卡最多两行，标签不得丢失或改变顺序。
 - 每页均须显示 UAF 水印。
 - 若正文过长超出页面，允许浏览器自动缩小，但鼓励实现层做内容截断提示。
 

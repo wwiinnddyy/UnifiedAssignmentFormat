@@ -56374,13 +56374,14 @@ function drawPill(page, x, y, w, h, fill2, border) {
 // src/renderCard.ts
 var PAGE_WIDTH = 595.28;
 var PAGE_HEIGHT = 841.89;
-var PAGE_MARGIN = 36;
+var PAGE_MARGIN = 40;
 var WATERMARK_SPACE = 24;
 var COLUMN_GAP = 14;
 var ROW_GAP = 14;
 var CARD_WIDTH = (PAGE_WIDTH - PAGE_MARGIN * 2 - COLUMN_GAP) / 2;
-var CARD_PAD = 14;
-var HEADER_HEIGHT = 48;
+var CARD_PAD = 16;
+var HEADER_HEIGHT = 56;
+var CARD_RADIUS = 16;
 var CONTENT_FONT = 13.5;
 var CONTENT_LINE_HEIGHT = 19;
 var MAX_LINES_PER_FRAGMENT = 12;
@@ -56389,34 +56390,34 @@ var MIN_CARD_HEIGHT = 140;
 var SUBJECT_FONT = 17;
 var DATE_FONT = 9.5;
 var TAG_FONT = 9.5;
-var WATERMARK_FONT = 9;
+var WATERMARK_FONT = 10;
 var DEFAULT_COLORS = {
-  pageBg: rgb(248 / 255, 250 / 255, 252 / 255),
-  shadow: rgb(203 / 255, 213 / 255, 225 / 255),
-  border: rgb(226 / 255, 232 / 255, 240 / 255),
-  card: rgb(1, 1, 1),
-  header: rgb(37 / 255, 99 / 255, 235 / 255),
-  headerText: rgb(1, 1, 1),
-  dateText: rgb(219 / 255, 234 / 255, 254 / 255),
-  content: rgb(15 / 255, 23 / 255, 42 / 255),
-  chip: rgb(224 / 255, 231 / 255, 255 / 255),
-  chipText: rgb(55 / 255, 48 / 255, 163 / 255),
-  muted: rgb(100 / 255, 116 / 255, 139 / 255),
-  watermark: rgb(148 / 255, 163 / 255, 184 / 255)
+  pageBg: rgb(255 / 255, 251 / 255, 254 / 255),
+  shadow: rgb(0 / 255, 0 / 255, 0 / 255),
+  border: rgb(121 / 255, 116 / 255, 126 / 255),
+  card: rgb(255 / 255, 251 / 255, 254 / 255),
+  header: rgb(24 / 255, 103 / 255, 192 / 255),
+  headerText: rgb(29 / 255, 27 / 255, 32 / 255),
+  dateText: rgb(73 / 255, 69 / 255, 79 / 255),
+  content: rgb(29 / 255, 27 / 255, 32 / 255),
+  chip: rgb(232 / 255, 222 / 255, 248 / 255),
+  chipText: rgb(29 / 255, 25 / 255, 43 / 255),
+  muted: rgb(73 / 255, 69 / 255, 79 / 255),
+  watermark: rgb(73 / 255, 69 / 255, 79 / 255)
 };
 var CLASSWORKS_DARK_COLORS = {
-  pageBg: rgb(18 / 255, 18 / 255, 18 / 255),
-  shadow: rgb(5 / 255, 5 / 255, 5 / 255),
-  border: rgb(66 / 255, 66 / 255, 66 / 255),
-  card: rgb(30 / 255, 30 / 255, 30 / 255),
+  pageBg: rgb(20 / 255, 18 / 255, 24 / 255),
+  shadow: rgb(0 / 255, 0 / 255, 0 / 255),
+  border: rgb(73 / 255, 69 / 255, 79 / 255),
+  card: rgb(29 / 255, 27 / 255, 32 / 255),
   header: rgb(24 / 255, 103 / 255, 192 / 255),
-  headerText: rgb(1, 1, 1),
-  dateText: rgb(227 / 255, 242 / 255, 253 / 255),
-  content: rgb(238 / 255, 238 / 255, 238 / 255),
-  chip: rgb(48 / 255, 63 / 255, 159 / 255),
-  chipText: rgb(232 / 255, 234 / 255, 246 / 255),
-  muted: rgb(176 / 255, 190 / 255, 197 / 255),
-  watermark: rgb(144 / 255, 164 / 255, 174 / 255)
+  headerText: rgb(230 / 255, 225 / 255, 229 / 255),
+  dateText: rgb(202 / 255, 196 / 255, 208 / 255),
+  content: rgb(230 / 255, 225 / 255, 229 / 255),
+  chip: rgb(74 / 255, 68 / 255, 88 / 255),
+  chipText: rgb(232 / 255, 222 / 255, 248 / 255),
+  muted: rgb(202 / 255, 196 / 255, 208 / 255),
+  watermark: rgb(255 / 255, 255 / 255, 255 / 255)
 };
 function widthOf(font, text, size) {
   return font.widthOfTextAtSize(text, size);
@@ -56489,8 +56490,7 @@ function drawPageBackground(page, font, canRenderCjk, colors) {
     y: PAGE_MARGIN - 4,
     size: WATERMARK_FONT,
     font,
-    color: colors.watermark,
-    opacity: 0.65
+    color: colors.watermark
   });
 }
 function drawTags(page, tags, x, y, font, colors) {
@@ -56511,13 +56511,10 @@ function drawTags(page, tags, x, y, font, colors) {
 }
 function drawFragment(page, fragment, x, top, font, fontBold, dateDisplay, canRenderCjk, colors) {
   const y = top - fragment.height;
-  drawRoundedRect(page, x + 3, y - 3, CARD_WIDTH, fragment.height, 12, colors.shadow);
-  drawRoundedRect(page, x, y, CARD_WIDTH, fragment.height, 12, colors.card, {
+  drawRoundedRect(page, x, y, CARD_WIDTH, fragment.height, CARD_RADIUS, colors.card, {
     color: colors.border,
     width: 1
   });
-  drawRoundedRect(page, x, top - HEADER_HEIGHT, CARD_WIDTH, HEADER_HEIGHT, 12, colors.header);
-  page.drawRectangle({ x, y: top - HEADER_HEIGHT, width: CARD_WIDTH, height: 12, color: colors.header });
   const continuation = fragment.continuation ? canRenderCjk ? "\uFF08\u7EED\uFF09" : " (cont.)" : "";
   const subject = ellipsize(
     `${fragment.assignment.subject}${continuation}`,
@@ -56527,19 +56524,19 @@ function drawFragment(page, fragment, x, top, font, fontBold, dateDisplay, canRe
   );
   page.drawText(subject, {
     x: x + CARD_PAD,
-    y: top - 23,
+    y: top - CARD_PAD - 20,
     size: SUBJECT_FONT,
     font: fontBold,
     color: colors.headerText
   });
   page.drawText(formatDate(fragment.assignment.date, dateDisplay), {
     x: x + CARD_PAD,
-    y: top - 39,
+    y: top - CARD_PAD - 40,
     size: DATE_FONT,
     font,
     color: colors.dateText
   });
-  let lineY = top - HEADER_HEIGHT - 24;
+  let lineY = top - CARD_PAD - HEADER_HEIGHT - 12;
   for (const line of fragment.lines) {
     page.drawText(line || " ", {
       x: x + CARD_PAD,
@@ -56551,12 +56548,12 @@ function drawFragment(page, fragment, x, top, font, fontBold, dateDisplay, canRe
     lineY -= CONTENT_LINE_HEIGHT;
   }
   if (fragment.showTags) {
-    drawTags(page, fragment.assignment.tags, x + CARD_PAD, y + 13, font, colors);
+    drawTags(page, fragment.assignment.tags, x + CARD_PAD, y + CARD_PAD + 5, font, colors);
   } else {
     const continued = canRenderCjk ? "\u6B63\u6587\u4E0B\u9875\u7EE7\u7EED" : "Continued on next card";
     page.drawText(continued, {
       x: x + CARD_PAD,
-      y: y + 15,
+      y: y + CARD_PAD + 8,
       size: TAG_FONT,
       font,
       color: colors.muted

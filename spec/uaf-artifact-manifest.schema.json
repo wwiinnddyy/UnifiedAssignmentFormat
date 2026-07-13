@@ -62,7 +62,7 @@
           "enum": ["html-to-pdf", "native-pdf"]
         },
         "printEngine": {
-          "enum": ["browser-print", "pdf-lib", "dotnet-native"]
+          "enum": ["browser-print", "pdf-lib", "dotnet-native", "dart-native"]
         },
         "payloadAttachment": {
           "const": "uaf_payload.csv"
@@ -99,7 +99,7 @@
     "relativePath": {
       "type": "string",
       "minLength": 1,
-      "pattern": "^(?![A-Za-z]:)(?!/)(?!.*://)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"
+      "pattern": "^(?![A-Za-z]:)(?!/)(?!.*://)(?!.*//)(?!.*(?:^|/)\\.(?:/|$))(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\.(?:/|$))[A-Za-z0-9._/-]+$"
     }
   }
 }

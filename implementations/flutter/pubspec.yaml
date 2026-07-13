@@ -1,0 +1,25 @@
+name: unified_assignment_format
+description: Flutter-compatible UAF v1.0 SDK for CSV, HTML, PDF, and verified artifact packages.
+version: 1.0.0
+repository: https://github.com/wwiinnddyy/UnifiedAssignmentFormat
+issue_tracker: https://github.com/wwiinnddyy/UnifiedAssignmentFormat/issues
+
+environment:
+  sdk: ">=3.8.0 <4.0.0"
+
+dependencies:
+  archive: ^4.0.9
+  crypto: ^3.0.7
+  path: ^1.9.1
+  pdf: ">=3.11.3 <3.13.0"
+
+dev_dependencies:
+  lints: ^6.1.0
+  test: ^1.30.0
+
+topics:
+  - flutter
+  - pdf
+  - csv
+  - education
+  - file-format

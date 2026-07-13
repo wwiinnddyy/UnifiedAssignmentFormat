@@ -308,7 +308,7 @@ public sealed partial class UafArtifactPackage
             throw new UafException(UafErrorCode.InvalidPackage, $"Unsupported pipeline renderer: {manifest.Pipeline.Renderer}");
         }
 
-        if (manifest.Pipeline.PrintEngine is not ("browser-print" or "pdf-lib" or "dotnet-native"))
+        if (manifest.Pipeline.PrintEngine is not ("browser-print" or "pdf-lib" or "dotnet-native" or "dart-native"))
         {
             throw new UafException(UafErrorCode.InvalidPackage, $"Unsupported pipeline printEngine: {manifest.Pipeline.PrintEngine}");
         }

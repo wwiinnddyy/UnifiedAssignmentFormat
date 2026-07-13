@@ -14,3 +14,10 @@ implementations/typescript/packages/pdf/assets/NotoSansSC-Regular.woff
 *.user
 *.suo
 .vs/
+
+# Dart / Flutter (implementations/flutter)
+implementations/flutter/.dart_tool/
+implementations/flutter/.packages
+implementations/flutter/build/
+implementations/flutter/doc/api/
+implementations/flutter/pubspec.lock

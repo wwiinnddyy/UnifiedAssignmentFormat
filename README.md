@@ -23,7 +23,8 @@ UAF v1.0 将一组作业信息编码为 **多卡片 PDF**（人类可读，空�
 | 语言 | 目录 | 说明 |
 |------|------|------|
 | **TypeScript / Node** | [implementations/typescript/](./implementations/typescript/) | 参考实现：`@uaf/core`、`@uaf/html`、`@uaf/pdf`、`uaf` CLI |
-| **C#** | [implementations/csharp/](./implementations/csharp/) | 规划中 |
+| **C#** | [implementations/csharp/](./implementations/csharp/) | .NET 参考实现 |
+| **Flutter / Dart** | [implementations/flutter/](./implementations/flutter/) | Flutter 跨平台 SDK：CSV、HTML、PDF 与整合包 |
 
 详见 [implementations/README.md](./implementations/README.md)。
 
@@ -41,6 +42,18 @@ pnpm run read:sample-package
 ```
 
 安装、CLI、SDK 接入与 npm 发布说明见 [implementations/typescript/README.md](./implementations/typescript/README.md)。
+
+## 快速开始（Flutter / Dart）
+
+```powershell
+cd implementations/flutter
+dart pub get
+dart analyze
+dart test
+dart run example/unified_assignment_format_example.dart
+```
+
+Flutter 接入、平台入口与 SDK 示例见 [implementations/flutter/README.md](./implementations/flutter/README.md)。
 
 ## 平台接入 Pipeline（语言无关）
 

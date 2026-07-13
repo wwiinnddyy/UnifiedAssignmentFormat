@@ -113,7 +113,8 @@ Catalog → /Names → /EmbeddedFiles → 名称树 → FileSpec(UF: uaf_payload
 | 语言 | 目录 | 状态 | 方法 |
 |------|------|------|------|
 | TypeScript / Node | [`implementations/typescript/`](../implementations/typescript/) | 已实现 | 原生矢量绘制（`@uaf/pdf`）、HTML 渲染（`@uaf/html`）、`uaf` CLI |
-| C# | [`implementations/csharp/`](../implementations/csharp/) | 规划中 | — |
+| C# | [`implementations/csharp/`](../implementations/csharp/) | 已实现 | 纯 .NET CSV、HTML、PDF 与 artifact package |
+| Flutter / Dart | [`implementations/flutter/`](../implementations/flutter/) | 已实现 | 纯 Dart CSV、HTML、PDF；IO 平台 artifact package |
 
 共享验收样例：[`examples/`](../examples/)。
 

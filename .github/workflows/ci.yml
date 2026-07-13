@@ -49,3 +49,64 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+  flutter-dart:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            dart: "3.8.0"
+            web: false
+          - os: ubuntu-latest
+            dart: stable
+            web: true
+          - os: windows-latest
+            dart: stable
+            web: false
+          - os: macos-latest
+            dart: stable
+            web: false
+    defaults:
+      run:
+        working-directory: implementations/flutter
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ matrix.dart }}
+
+      - uses: actions/setup-node@v4
+        if: matrix.web
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Check formatting
+        if: matrix.web
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze
+        run: dart analyze
+
+      - name: Test
+        run: dart test
+
+      - name: Compile platform-neutral API for web
+        if: matrix.web
+        run: dart compile js tool/web_smoke.dart -o build/web_smoke.js
+
+      - name: Run platform-neutral web smoke test
+        if: matrix.web
+        run: node build/web_smoke.js
+
+      - name: Test platform-neutral APIs in Chrome
+        if: matrix.web
+        run: >-
+          dart test -p chrome
+          test/artifact_manifest_test.dart
+          test/html_test.dart
+          test/pdf_test.dart

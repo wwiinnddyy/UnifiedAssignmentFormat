@@ -89,7 +89,7 @@ The manifest SHOULD name the production path explicitly:
 }
 ```
 
-Native renderers MAY use another declared engine when the manifest schema allows it, such as `dotnet-native` for the C# reference implementation.
+Native renderers MAY use another declared engine when the manifest schema allows it, such as `dotnet-native` for the C# reference implementation or `dart-native` for the Flutter / Dart reference implementation.
 
 ## 5. TypeScript Demonstration
 
