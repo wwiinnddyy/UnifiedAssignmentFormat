@@ -1,0 +1,112 @@
+{
+  "summary": {
+    "projectName": "UnifiedAssignmentFormat",
+    "locale": "zh-CN",
+    "modelId": "agent-work-loop-v4",
+    "reportContractVersion": 25,
+    "overview": "项目拥有清晰的规范体系和 CI 管线，但缺少项目级 Skill 资产，且会话中未观察到编辑后验证行为。",
+    "aiAgentPractice": {
+      "inspectedSurfaces": [
+        "Workflows"
+      ],
+      "coverageRows": [
+        {
+          "surface": "Workflows",
+          "scopes": [
+            "Project"
+          ],
+          "count": 1,
+          "paths": [
+            ".github/workflows/ci.yml"
+          ]
+        },
+        {
+          "surface": "Custom Agents",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Skills",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        }
+      ]
+    },
+    "assignmentSummaries": [],
+    "dimensions": [
+      {
+        "id": "task-understanding",
+        "label": "任务理解",
+        "score": 65,
+        "summary": "5 份规范文件和 README 为任务边界提供了充分上下文，但一次用户纠正表明 Agent 对核心载体（PDF）的理解未从规范中自动获取。",
+        "findingRefs": []
+      },
+      {
+        "id": "controlled-execution",
+        "label": "可控执行",
+        "score": 60,
+        "summary": "6 个工作区清单和 CI 工作流提供了执行基础，但 0 个项目 Skill 意味着 Agent 缺少可复用的受控执行路径。",
+        "findingRefs": [
+          "project-skill-absence"
+        ]
+      },
+      {
+        "id": "change-validation",
+        "label": "改动验证",
+        "score": 55,
+        "summary": "项目有 23 个测试文件和 CI 管线，但分析的 12 个会话中未观察到编辑后验证命令。",
+        "findingRefs": [
+          "validation-after-edit-unobserved"
+        ]
+      },
+      {
+        "id": "reliable-delivery",
+        "label": "可靠交付",
+        "score": 50,
+        "summary": "CI 工作流存在，但交付验收信号在会话中不可观察；1 个长会话候选尚待结果复核。",
+        "findingRefs": []
+      },
+      {
+        "id": "learning-capture",
+        "label": "经验沉淀",
+        "score": 35,
+        "summary": "无可比较的观察窗口和已验证的改进对比，学习捕获暂不适用。",
+        "findingRefs": []
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "project-skill-absence",
+      "title": "项目缺少可复用的 Skill 资产",
+      "severity": "Low",
+      "reason": "资产扫描确认项目级 Skill 数量为零。在分析的 12 个会话中未观察到可归入 Skill 的重复过程，因此无法确认是否存在未被资产化的重复过程需求。当前状态意味着 Agent 每次都需要从零推断执行路径，缺少项目特有的受控执行模板。",
+      "expectedOutput": [
+        "为项目中最重复的执行路径提供一个项目级 Skill，使 Agent 能够选择已有模板而非从零推断。"
+      ],
+      "expectedArtifact": "Skill 定义文件",
+      "aiFixPrompt": "/better-harness fix this issue\n\n为项目中最常重复的执行路径创建一个最小 Skill 资产。\n\n## 验证\n\n- 确认 .qoder/skills/ 下出现至少一个 SKILL.md\n- 在下次匹配任务中观察 Skill 是否被自动选择",
+      "dimensionRefs": [
+        "controlled-execution"
+      ]
+    },
+    {
+      "id": "validation-after-edit-unobserved",
+      "title": "会话中未观察到编辑后验证行为",
+      "severity": "Low",
+      "reason": "分析的 12 个会话样本中没有验证命令类别被观察到。项目拥有 23 个测试文件和 CI 工作流，但 Agent 在编辑后是否运行测试、类型检查或构建在样本中不可见。这可能是会话采样边界导致的不可观察，而非实际缺失。",
+      "expectedOutput": [
+        "Agent 在编辑后运行项目验证命令，并在报告中体现验证结果。"
+      ],
+      "expectedArtifact": "执行约定或 Skill",
+      "aiFixPrompt": "/better-harness fix this issue\n\n在项目的 Agent 执行约定中添加编辑后验证步骤。\n\n## 验证\n\n- 在下一次编辑任务中观察 Agent 是否主动运行测试或类型检查\n- 确认验证命令返回可操作的失败信息",
+      "dimensionRefs": [
+        "change-validation"
+      ]
+    }
+  ]
+}

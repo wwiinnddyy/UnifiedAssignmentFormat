@@ -110,3 +110,21 @@ jobs:
           test/artifact_manifest_test.dart
           test/html_test.dart
           test/pdf_test.dart
+
+  csharp:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: implementations/csharp
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build
+        run: dotnet build
+
+      - name: Test
+        run: dotnet run --project tests/UnifiedAssignmentFormat.Tests

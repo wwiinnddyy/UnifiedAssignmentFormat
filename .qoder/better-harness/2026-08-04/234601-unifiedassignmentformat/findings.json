@@ -1,0 +1,127 @@
+{
+  "summary": {
+    "projectName": "UnifiedAssignmentFormat",
+    "locale": "zh-CN",
+    "modelId": "agent-work-loop-v4",
+    "reportContractVersion": 25,
+    "overview": "UAF 项目在 TypeScript 和 Flutter 实现上具备完整的 CI 流水线和规范文档，但 C# 实现完全缺少自动化验证，且三语言实现之间无交叉一致性检查。",
+    "aiAgentPractice": {
+      "inspectedSurfaces": [
+        "Workflows"
+      ],
+      "coverageRows": [
+        {
+          "surface": "Workflows",
+          "scopes": [
+            "Project"
+          ],
+          "count": 1,
+          "paths": [
+            ".github/workflows/ci.yml"
+          ]
+        },
+        {
+          "surface": "Custom Agents",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Skills",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Rules",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Hooks",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        }
+      ]
+    },
+    "assignmentSummaries": [],
+    "dimensions": [
+      {
+        "id": "task-understanding",
+        "label": "任务理解",
+        "score": 62,
+        "summary": "规范文档完整（5 个 spec 文件），项目结构清晰，但缺少 AGENTS.md 等 Agent 路由文件来引导上下文边界。",
+        "findingRefs": []
+      },
+      {
+        "id": "controlled-execution",
+        "label": "可控执行",
+        "score": 55,
+        "summary": "CI 工作流提供完整的 TypeScript 和 Flutter 构建/测试命令链，但无项目级 Agent 约束文件。",
+        "findingRefs": []
+      },
+      {
+        "id": "change-validation",
+        "label": "改动验证",
+        "score": 42,
+        "summary": "TypeScript 和 Flutter 具备类型检查、lint、测试和产物验证；C# 实现（10 个源文件）完全不在 CI 覆盖范围内。",
+        "findingRefs": [
+          "csharp-ci-coverage-gap"
+        ]
+      },
+      {
+        "id": "reliable-delivery",
+        "label": "可靠交付",
+        "score": 50,
+        "summary": "CI 包含 TypeScript 产物生成与验证循环，但跨语言一致性无自动化保障，交付可靠性存在结构性缺口。",
+        "findingRefs": [
+          "cross-language-consistency-unchecked"
+        ]
+      },
+      {
+        "id": "learning-capture",
+        "label": "经验沉淀",
+        "score": 35,
+        "summary": "无可比较的观察窗口，无法评估学习捕获效果。项目零 Skill/Rule/Hook 配置。",
+        "findingRefs": []
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "csharp-ci-coverage-gap",
+      "title": "C# 实现完全不在 CI 覆盖范围内",
+      "severity": "Medium",
+      "reason": "CI 工作流（ci.yml）仅包含 TypeScript 和 Flutter 两个 job，而 C# 实现拥有 10 个源文件（含 1 个测试文件 Program.cs）却无任何自动化构建、类型检查或测试步骤。这意味着 C# 代码变更可以在没有任何自动化验证的情况下合并到 main 分支，存在编译失败或回归被忽略的风险。",
+      "expectedOutput": [
+        "C# 实现拥有独立的 CI job，覆盖构建和测试步骤",
+        "CI 工作流对三种语言实现均提供自动化验证"
+      ],
+      "expectedArtifact": ".github/workflows/ci.yml",
+      "aiFixPrompt": "/better-harness fix this issue\n\n为 C# 实现添加 CI job，确保与现有 TypeScript 和 Flutter 流水线保持一致的验证覆盖。\n\n## 目标\n\n在 .github/workflows/ci.yml 中添加 csharp job，覆盖：\n1. dotnet build\n2. dotnet test\n\n## 验证\n\n- 确认 CI 工作流语法正确\n- 确认 C# 项目在本地可以构建和测试通过",
+      "dimensionRefs": [
+        "change-validation"
+      ]
+    },
+    {
+      "id": "cross-language-consistency-unchecked",
+      "title": "三语言实现之间缺少交叉一致性验证",
+      "severity": "Low",
+      "reason": "项目包含 TypeScript、C# 和 Flutter（Dart）三种独立实现，各自拥有独立的测试套件，但无自动化机制验证三者在 UAF 规范层面的行为一致性。当规范变更时，三种实现可能产生静默分歧——各自测试通过但行为不完全一致。当前证据为结构性观察，尚未观测到实际不一致的后果。",
+      "expectedOutput": [
+        "明确跨语言一致性验证的可行路线或记录为何不需要"
+      ],
+      "expectedArtifact": "CI 交叉验证步骤或可行性评估文档",
+      "aiFixPrompt": "/better-harness fix this issue\n\n评估是否需要跨语言一致性验证机制。\n\n## 调查方向\n\n1. 检查三种实现是否共享相同的规范约束（spec/ 目录）\n2. 评估是否存在可提取的共享测试向量（如 CSV 解析、HTML 渲染、PDF 生成的输入/输出断言）\n3. 如果可行，设计一个轻量级交叉验证步骤\n\n## 验证\n\n- 确认至少一种可自动化的跨语言一致性检查路线\n- 不要求完整实现，仅需可行性评估",
+      "dimensionRefs": [
+        "reliable-delivery"
+      ]
+    }
+  ]
+}

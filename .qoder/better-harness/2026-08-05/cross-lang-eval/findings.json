@@ -1,0 +1,194 @@
+{
+  "summary": {
+    "projectName": "UnifiedAssignmentFormat",
+    "locale": "zh-CN",
+    "modelId": "agent-work-loop-v4",
+    "reportContractVersion": 25,
+    "overview": "三种语言实现（TypeScript/C#/Flutter）共享同一规范，但缺乏跨语言一致性验证机制——测试数据各自独立、共享样例仅 TypeScript 验证、CI 无交叉读取步骤。至少一条自动化交叉验证路线可行且实施成本低。",
+    "aiAgentPractice": {
+      "inspectedSurfaces": [],
+      "coverageRows": [
+        {
+          "surface": "Workflows",
+          "scopes": [
+            "Project"
+          ],
+          "count": 1,
+          "paths": [
+            ".github/workflows/ci.yml"
+          ]
+        },
+        {
+          "surface": "Custom Agents",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Rules",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Skills",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Hooks",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        },
+        {
+          "surface": "Commands",
+          "scopes": [
+            "Project"
+          ],
+          "count": 0
+        }
+      ]
+    },
+    "assignmentSummaries": [],
+    "dimensions": [
+      {
+        "id": "task-understanding",
+        "label": "任务理解",
+        "score": 72,
+        "summary": "规范文档（spec/）结构清晰，字段约束和格式规则定义完整，三种实现有据可依。",
+        "findingRefs": []
+      },
+      {
+        "id": "controlled-execution",
+        "label": "可控执行",
+        "score": 52,
+        "summary": "三种实现各有构建和测试命令，但 CI 缺少跨语言产物传递和交叉验证能力。",
+        "findingRefs": [
+          "no-shared-test-vectors",
+          "ci-no-cross-verification"
+        ]
+      },
+      {
+        "id": "change-validation",
+        "label": "改动验证",
+        "score": 52,
+        "summary": "各实现的自往返测试存在，但跨语言验证缺失，无共享测试向量覆盖规范边界条件。",
+        "findingRefs": [
+          "no-shared-test-vectors",
+          "sample-uaf-only-ts-verified",
+          "no-cross-lang-csv-boundary"
+        ]
+      },
+      {
+        "id": "reliable-delivery",
+        "label": "可靠交付",
+        "score": 55,
+        "summary": "CI 运行且验证各语言独立测试通过，但跨语言互操作性未被验证即视为交付完成。",
+        "findingRefs": [
+          "sample-uaf-only-ts-verified",
+          "ci-no-cross-verification"
+        ]
+      },
+      {
+        "id": "learning-capture",
+        "label": "经验沉淀",
+        "score": 38,
+        "summary": "无后续可比结果验证改进效果；项目未配置 Rules/Skills 来捕获跨语言开发模式。",
+        "findingRefs": [
+          "no-cross-impl-guidance"
+        ]
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "no-shared-test-vectors",
+      "title": "三种实现使用不同测试数据，无法检测跨语言序列化差异",
+      "severity": "High",
+      "reason": "TypeScript 用英文 2 条记录，C# 用中文 3 条记录（tags: 必做/背诵），Flutter 用中文 3 条但 tags 格式不同（必做;几何 vs 必做;几何;重难点）。三组数据在 subject、content、tags、date 格式上均不一致，无法自动发现 CSV 转义、tags 分隔符、日期格式解析等差异导致的跨语言 payload 不一致。file-integration-standard.md §3 step 9 明确要求 CSV/HTML/PDF 恢复的 payload 一致，但无共享输入向量支撑此断言。",
+      "expectedOutput": [
+        "创建一份规范级共享测试向量文件，覆盖 RFC 4180 边界和字段约束",
+        "三种实现的测试套件均读取此向量并执行 roundtrip 断言",
+        "CI 中三种语言均验证共享向量通过"
+      ],
+      "expectedArtifact": "spec/test-vectors/ 或 examples/cross-language-test.json",
+      "aiFixPrompt": "/better-harness fix this issue\n\n创建跨语言共享测试向量并让三种实现读取同一份向量执行 roundtrip 断言。\n\n## 调查方向\n\n1. 在 spec/test-vectors/ 或 examples/ 中定义共享测试向量文件（JSON 格式），覆盖：正常字段、含换行 content、含引号/逗号 tags、空 tags、边界长度\n2. 让 TypeScript、C#、Flutter 测试套件均读取此文件构造 UafDocument\n3. 各实现序列化后再反序列化，断言语义等价\n\n## 验证\n\n- 三种实现的测试套件均通过\n- 共享向量文件被三种测试引用",
+      "dimensionRefs": [
+        "change-validation",
+        "controlled-execution"
+      ]
+    },
+    {
+      "id": "sample-uaf-only-ts-verified",
+      "title": "共享验收样例仅被 TypeScript 验证，C# 和 Flutter 未读取",
+      "severity": "High",
+      "reason": "examples/sample-homework.uaf/ 作为规范的共享验收样例被 uaf-v1.0.md 和 file-integration-standard.md 引用，但仅由 TypeScript pipeline 生成和验证。C# 和 Flutter 实现从未被验证能否正确读取或重新生成该包。CI 中 generate:sample 和 verify:sample 仅在 TypeScript job 中执行，C# 和 Flutter job 不包含读取 examples/ 的步骤。",
+      "expectedOutput": [
+        "C# 测试套件能正确读取 examples/sample-homework.uaf/ 并验证 payload 语义",
+        "Flutter 测试套件能正确读取 examples/sample-homework.uaf/ 并验证 payload 语义",
+        "CI 中两个 job 均包含并通过对共享样例的验证"
+      ],
+      "expectedArtifact": "C# 和 Flutter 测试套件中的共享样例验证用例",
+      "aiFixPrompt": "/better-harness fix this issue\n\n在 C# 和 Flutter 的 CI job 中增加读取并验证 examples/sample-homework.uaf/ 的步骤。\n\n## 调查方向\n\n1. C# 测试中添加一个用例：读取 examples/sample-homework.uaf/uaf-manifest.json 和 uaf_payload.csv，验证字段语义与规范一致\n2. Flutter 测试中添加类似用例（artifact_package_test.dart 已有部分读取能力）\n3. CI 配置中确保 C# 和 Flutter job 能访问 examples/ 目录\n\n## 验证\n\n- C# dotnet test 包含共享样例读取测试\n- Flutter dart test 包含共享样例读取测试\n- CI 两个 job 均通过",
+      "dimensionRefs": [
+        "change-validation",
+        "reliable-delivery"
+      ]
+    },
+    {
+      "id": "no-cross-lang-csv-boundary",
+      "title": "CSV 序列化缺乏跨语言边界条件验证，RFC 4180 规则存在分歧风险",
+      "severity": "Medium",
+      "reason": "csv-schema.md 定义了 RFC 4180 规则（引号转义、换行处理、BOM 等），但未提供覆盖边界条件的 golden CSV 文件。对于含换行符的 content 字段、含分号的 tags 字段、空 tags 的尾部逗号处理，三种实现可能产生不同的 CSV 字节流。各实现的 round-trip 测试仅验证自身序列化→自身反序列化的一致性，不验证跨实现字节级或语义级等价。信心度为 medium——风险合理但尚无实际不一致证据。",
+      "expectedOutput": [
+        "创建覆盖 RFC 4180 边界条件的 golden CSV 文件",
+        "三种实现均能正确解析并产生相同语义输出",
+        "反向序列化验证三语言输出语义等价"
+      ],
+      "expectedArtifact": "spec/test-vectors/golden-boundary.csv",
+      "aiFixPrompt": "/better-harness fix this issue\n\n创建覆盖 RFC 4180 边界条件的 golden CSV 文件，要求三语言实现均能正确解析。\n\n## 调查方向\n\n1. 在 spec/test-vectors/ 中创建 golden CSV 文件，覆盖：含换行 content、含引号转义、含逗号 tags、BOM 头、空 tags 尾部逗号\n2. 三种实现分别解析此 golden CSV，断言产生相同的语义输出\n3. 反向验证：三种实现分别序列化同一文档，比对 CSV 字节流或至少语义等价\n\n## 验证\n\n- 三种实现均能正确解析 golden CSV\n- 三种实现的序列化输出在语义层面等价",
+      "dimensionRefs": [
+        "change-validation"
+      ]
+    },
+    {
+      "id": "ci-no-cross-verification",
+      "title": "CI 缺少跨语言生成-交叉读取验证环节",
+      "severity": "High",
+      "reason": "当前 CI 仅验证各语言自我往返（self-roundtrip），不验证跨语言互操作性。如果 C# 生成的 PDF 中嵌入的 CSV 无法被 TypeScript 或 Flutter 正确提取，当前 CI 不会发现。file-integration-standard.md §3 step 9 要求 CSV/HTML/PDF 恢复的 payload 一致，但此验证仅在 TypeScript 的 read:sample-package 脚本中实现。CI 三个 job 完全独立，无 upload-artifact/download-artifact 步骤用于跨 job 传递产物。",
+      "expectedOutput": [
+        "CI 包含跨语言产物互读验证步骤",
+        "TypeScript 生成的包能被 C# 和 Flutter 正确解析",
+        "反向验证同样通过"
+      ],
+      "expectedArtifact": ".github/workflows/ci.yml 中的 cross-lang-verify job",
+      "aiFixPrompt": "/better-harness fix this issue\n\n在 CI 中添加跨语言产物互读验证 job。\n\n## 调查方向\n\n1. TypeScript job 生成 .uaf 包后 upload-artifact\n2. 新增 cross-lang-verify job，needs: [build-test]，download TypeScript 产物\n3. 在 cross-lang-verify 中用 C# 和 Flutter 分别读取 TypeScript 生成的包，验证 payload 一致性\n4. 反向：C# 生成包 → TypeScript 和 Flutter 读取验证\n\n## 验证\n\n- CI 新增 job 运行并通过\n- 任一语言生成的 .uaf 包能被其他两种语言正确解析",
+      "dimensionRefs": [
+        "controlled-execution",
+        "reliable-delivery"
+      ]
+    },
+    {
+      "id": "no-cross-impl-guidance",
+      "title": "跨实现变更同步无项目级指导，开发协调依赖人工记忆",
+      "severity": "Low",
+      "reason": "项目未配置任何 Agent 指导文件（无 AGENTS.md、Rules、Skills），AI 辅助开发时 Agent 不了解三语言架构约束和跨实现变更同步要求。修改 spec 或一种实现时，不会自动提示需同步更新其他两种实现。随着规范演进，实现漂移风险增加。信心度为 medium——零配置可能是有意的简约选择，但结合三语言实现的事实，缺少协调约束。",
+      "expectedOutput": [
+        "项目包含跨实现变更同步指导文件",
+        "文件声明三语言架构约束和命名约定",
+        "后续开发任务能感知同步约束"
+      ],
+      "expectedArtifact": "AGENTS.md 或 .qoder/rules/",
+      "aiFixPrompt": "/better-harness fix this issue\n\n创建项目级指导文件，声明跨实现变更同步约束。\n\n## 调查方向\n\n1. 创建 AGENTS.md 或项目 Rules 文件\n2. 声明三语言架构约束：修改 spec 时需同步三种实现\n3. 声明跨实现命名约定对齐要求\n4. 声明共享测试向量的维护责任\n\n## 验证\n\n- 指导文件存在于项目根目录或 .qoder/ 目录\n- 后续 AI 辅助开发时能感知跨实现同步约束",
+      "dimensionRefs": [
+        "learning-capture"
+      ]
+    }
+  ]
+}
