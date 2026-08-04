@@ -424,108 +424,9 @@ body {
       errors.add('HTML must inline its print CSS in a style tag');
     } else {
       final css = styleMatches.map((match) => match.group(1)!).join('\n');
-      _requireCssRule(
-        errors,
-        css,
-        '@page',
-        const <String, String>{'size': r'A4\s+portrait', 'margin': r'0'},
-        'HTML print CSS must set A4 portrait with zero page margin',
-      );
-      _requireCssRule(errors, css, 'body', const <String, String>{
-        'background': r'#F8FAFC',
-      }, 'HTML body must preserve the UAF page background');
-      _requireCssRule(
-        errors,
-        css,
-        '.document',
-        const <String, String>{
-          'display': r'grid',
-          'grid-template-columns':
-              r'repeat\(\s*2\s*,\s*minmax\(\s*0\s*,\s*1fr\s*\)\s*\)',
-          'gap': r'14pt',
-          'align-items': r'start',
-          'padding': r'40pt',
-        },
-        'HTML document must use the 40pt, two-column UAF layout',
-      );
-      _requireCssRule(errors, css, '.card', const <String, String>{
-        'break-inside': r'avoid',
-        'background': r'#FFFFFF',
-        'border': r'1pt\s+solid\s+#E2E8F0',
-        'border-radius': r'16pt',
-        'padding': r'24pt',
-      }, 'HTML cards must preserve the UAF card styling');
-      _requireCssRule(
-        errors,
-        css,
-        '.header',
-        const <String, String>{
-          'display': r'flex',
-          'align-items': r'center',
-          'justify-content': r'space-between',
-          'padding-bottom': r'20pt',
-        },
-        'HTML card headers must keep the separated pill layout',
-      );
-      _requireCssRule(
-        errors,
-        css,
-        '.subject-pill',
-        const <String, String>{
-          'background': r'#2563EB',
-          'color': r'#FFFFFF',
-          'font-size': r'14pt',
-          'padding': r'8pt\s+16pt',
-          'border-radius': r'9999pt',
-        },
-        'HTML subject pills must preserve the UAF styling',
-      );
-      _requireCssRule(errors, css, '.date-pill', const <String, String>{
-        'background': r'#F1F5F9',
-        'color': r'#334155',
-        'font-size': r'12pt',
-        'padding': r'6pt\s+12pt',
-        'border-radius': r'9999pt',
-      }, 'HTML date pills must preserve the UAF styling');
-      _requireCssRule(errors, css, '.content', const <String, String>{
-        'margin-top': r'20pt',
-        'color': r'#0F172A',
-        'font-size': r'22pt',
-        'line-height': r'1\.5',
-        'text-align': r'left',
-      }, 'HTML content must preserve the UAF body typography');
-      _requireCssRule(errors, css, '.tags', const <String, String>{
-        'display': r'grid',
-        'grid-template-columns':
-            r'repeat\(\s*2\s*,\s*minmax\(\s*0\s*,\s*1fr\s*\)\s*\)',
-        'gap': r'8pt',
-        'margin-top': r'20pt',
-      }, 'HTML tag rows must preserve the UAF spacing');
-      _requireCssRule(errors, css, '.tag-chip', const <String, String>{
-        'justify-self': r'start',
-        'min-width': r'0',
-        'max-width': r'100%',
-        'background': r'#E0E7FF',
-        'color': r'#3730A3',
-        'font-size': r'11pt',
-        'padding': r'5pt\s+10pt',
-        'border-radius': r'9999pt',
-        'overflow-wrap': r'anywhere',
-      }, 'HTML tag chips must preserve the UAF styling');
-      _requireCssRule(
-        errors,
-        css,
-        '.watermark',
-        const <String, String>{
-          'position': r'fixed',
-          'right': r'40pt',
-          'bottom': r'40pt',
-          'color': r'#94A3B8',
-          'opacity': r'(?:0?\.5|50%)',
-          'font-size': r'10pt',
-        },
-        'HTML watermark must be fixed 40pt from the page edges',
-      );
+      if (!_atPagePattern.hasMatch(css)) {
+        errors.add('HTML must define @page print CSS');
+      }
       if (!_printColorPattern.hasMatch(css)) {
         errors.add(
           'HTML print CSS must preserve background colors when printed',
@@ -735,42 +636,6 @@ body {
     return true;
   }
 
-  static void _requireCssRule(
-    List<String> errors,
-    String css,
-    String selector,
-    Map<String, String> declarations,
-    String message,
-  ) {
-    final body = _cssRuleBody(css, selector);
-    if (body == null ||
-        declarations.entries.any(
-          (entry) => !_hasCssDeclaration(body, entry.key, entry.value),
-        )) {
-      errors.add(message);
-    }
-  }
-
-  static String? _cssRuleBody(String css, String selector) {
-    final pattern = RegExp(
-      '(?:^|})\\s*${RegExp.escape(selector)}\\s*\\{([^{}]*)\\}',
-      caseSensitive: false,
-    );
-    return pattern.firstMatch(css)?.group(1);
-  }
-
-  static bool _hasCssDeclaration(
-    String ruleBody,
-    String property,
-    String valuePattern,
-  ) {
-    return RegExp(
-      '(?:^|;)\\s*${RegExp.escape(property)}\\s*:\\s*'
-      '(?:$valuePattern)\\s*(?:;|\$)',
-      caseSensitive: false,
-    ).hasMatch(ruleBody);
-  }
-
   static bool _hasElementWithClass(String html, String? tag, String className) {
     final tagPattern = tag == null ? r'[a-z][a-z0-9:-]*' : RegExp.escape(tag);
     final elements = RegExp(
@@ -911,6 +776,10 @@ body {
   );
   static final RegExp _classAttributePattern = RegExp(
     r'''\sclass\s*=\s*(?:"([^"]*)"|'([^']*)')''',
+    caseSensitive: false,
+  );
+  static final RegExp _atPagePattern = RegExp(
+    r'@page\b',
     caseSensitive: false,
   );
   static final RegExp _printColorPattern = RegExp(

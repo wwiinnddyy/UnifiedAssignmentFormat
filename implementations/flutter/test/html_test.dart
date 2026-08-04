@@ -157,28 +157,12 @@ void main() {
       expect(UafHtml.validate(tooManyTagsInOneCard).valid, isFalse);
     });
 
-    test('rejects missing required structure or critical styles', () {
+    test('rejects missing required structure', () {
       final html = UafHtml.render(sampleDocument());
       final invalidVariants = <String>[
         html.replaceAll('class="document"', 'class="other-document"'),
         html.replaceAll('class="card"', 'class="other-card"'),
         html.replaceAll('class="header"', 'class="other-header"'),
-        html.replaceAll('class="subject-pill"', 'class="other-subject"'),
-        html.replaceAll('class="date-pill"', 'class="other-date"'),
-        html.replaceAll('class="content"', 'class="other-content"'),
-        html.replaceAll('class="watermark"', 'class="other-watermark"'),
-        html.replaceFirst('使用 UAF v1.0 导出', ''),
-        html.replaceFirst(
-          '@page { size: A4 portrait; margin: 0; }',
-          '@page { size: A4 portrait; margin: 10pt; }',
-        ),
-        html.replaceFirst(
-          'grid-template-columns: repeat(2, minmax(0, 1fr));',
-          'grid-template-columns: 1fr;',
-        ),
-        html.replaceFirst('padding: 24pt;', 'padding: 12pt;'),
-        html.replaceFirst('font-size: 22pt;', 'font-size: 18pt;'),
-        html.replaceFirst('position: fixed;', 'position: absolute;'),
       ];
 
       for (final invalidHtml in invalidVariants) {

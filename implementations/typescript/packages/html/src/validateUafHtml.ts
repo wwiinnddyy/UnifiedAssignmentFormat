@@ -45,15 +45,6 @@ function validatePrintableStructure(html: string): string[] {
   if (!/@page\b/i.test(html)) {
     errors.push("HTML must define @page print CSS");
   }
-  if (!/size\s*:\s*A4\s+portrait/i.test(html)) {
-    errors.push("HTML print CSS must set size: A4 portrait");
-  }
-  if (!/print-color-adjust\s*:\s*exact/i.test(html)) {
-    errors.push("HTML print CSS must preserve background colors when printed");
-  }
-  if (!/border-radius\s*:\s*16pt/i.test(html)) {
-    errors.push("HTML must preserve the UAF rounded card styling");
-  }
   if (
     !/<template\b(?=[^>]*\bid=(["'])uaf-payload-csv\1)(?=[^>]*\bdata-filename=(["'])uaf_payload\.csv\2)[^>]*>/i.test(
       html,

@@ -1,6 +1,6 @@
 # UAF HTML 渲染器规范 v1.0
 
-本文档规定 UAF v1.0 的 HTML 渲染方式，包括 HTML 模板结构、CSS 样式、打印为 PDF 的要求，以及与 [`visual-spec.md`](./visual-spec.md) 的视觉对齐。
+本文档描述 UAF v1.0 的 HTML 渲染器参考实现，包括 HTML 模板结构、CSS 样式、打印为 PDF 的建议，以及与 [`visual-spec.md`](./visual-spec.md) 的视觉对齐。UAF 标准不强制要求 HTML 渲染器使用特定的 CSS 值或视觉样式；本文档中的具体样式值为参考实现默认值，第三方渲染器不必精确匹配。
 
 ## 1. 概述
 
@@ -27,15 +27,15 @@ HTML 渲染器是 TypeScript 参考实现的默认 PDF 导出路径，也是 UAF
 - HTML 解析器可从该 template 中解码多行 CSV，并按标准 CSV Schema 恢复完整 `UafDocument`。
 - HTML 校验器应验证 template 存在、CSV 可解析且 payload 满足标准 Schema，并确认可见卡片中的科目、日期、正文、标签和续卡提示与该 payload 一致。
 
-### 2.2 页面尺寸
+### 2.2 页面尺寸（推荐默认）
 
-| 属性 | 值 |
-|------|-----|
+| 属性 | 参考实现值 |
+|------|------|
 | 纸张 | A4 |
 | 方向 | 纵向（Portrait） |
 | 宽度 | `210mm` |
 | 高度 | 每页 `297mm`，内容超出时自动分页 |
-| 页数 | **1**（禁止分页） |
+| 页数 | **1**（参考实现禁止分页） |
 
 CSS 控制方式：
 
@@ -58,9 +58,9 @@ CSS 控制方式：
 }
 ```
 
-## 3. 视觉对齐
+## 3. 参考实现的视觉样式
 
-HTML 渲染器的视觉输出必须与 [`visual-spec.md`](./visual-spec.md) 一致。
+HTML 渲染器的视觉输出建议与 [`visual-spec.md`](./visual-spec.md) 的参考实现对齐，但不强制要求精确匹配。以下 CSS 值为参考实现默认样式，第三方渲染器不必精确匹配。
 
 ### 3.1 页面背景
 
@@ -142,9 +142,9 @@ font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
   "Hiragino Sans GB", "WenQuanYi Micro Hei", sans-serif;
 ```
 
-## 4. 水印
+## 4. 水印（参考实现建议特征）
 
-页面右下角固定位置须包含水印文本，与 [`visual-spec.md` §7](./visual-spec.md#7-pdf-导出水印) 对齐。
+参考实现中，页面右下角固定位置包含水印文本，与 [`visual-spec.md` §7](./visual-spec.md#7-pdf-导出水印水印参考实现建议特征) 对齐。水印不是 UAF 合规性要求。
 
 | 属性 | 值 |
 |------|-----|
@@ -158,11 +158,11 @@ font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
 
 实现方式：使用绝对定位（`position: absolute`）的 `<div>`，放置于 `<body>` 内、卡片之外。
 
-## 5. 打印为 PDF 的要求
+## 5. 打印为 PDF 的推荐设置
 
-当用户从浏览器打印 HTML 为 PDF 时，必须满足以下条件以确保输出合规：
+当用户从浏览器打印 HTML 为 PDF 时，建议以下设置以获得最佳效果：
 
-### 5.1 浏览器设置
+### 5.1 浏览器设置（推荐）
 
 | 设置 | 要求 |
 |------|------|
@@ -173,12 +173,12 @@ font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
 | 页眉 | 空 |
 | 页脚 | 空 |
 
-### 5.2 分页约束
+### 5.2 分页建议
 
 - 卡片使用两列流式布局，并设置 `break-inside: avoid`。
 - 单项正文过长时拆成带 `（续）` 标识的卡片，正文续卡不重复标签。
 - 标签超过两行时追加标签续卡；每张卡最多两行，标签不得丢失或改变顺序。
-- 每页均须显示 UAF 水印。
+- 每页建议显示 UAF 水印。
 - 若正文过长超出页面，允许浏览器自动缩小，但鼓励实现层做内容截断提示。
 
 ## 6. HTML → PDF 自动化转换

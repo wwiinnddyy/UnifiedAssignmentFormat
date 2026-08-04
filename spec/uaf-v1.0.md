@@ -21,9 +21,10 @@ UAF（Unified Assignment Format）是一种面向家校作业场景的文件交�
 ## 3. 文件格式
 
 - **扩展名**：`.pdf`
-- **页数**：至少 1 页；卡片在当前页放不下时自动续页，仍保持为一个 PDF 文件
+- **页数**：至少 1 页；卡片在当前页放不下时建议自动续页，仍保持为一个 PDF 文件
 - **目标档案格式**：PDF/A-3（v1.0 参考实现以功能合规为先，完整 conformance 见路线图）
 - **内嵌附件**：见 [csv-schema.md](./csv-schema.md) 与本文第 5 节
+- **视觉样式**：UAF 标准不限制 PDF 的视觉样式，参考实现的视觉风格见 [visual-spec.md](./visual-spec.md)（非规范性参考）
 
 可选展示中间制品：
 
@@ -69,14 +70,11 @@ Catalog → /Names → /EmbeddedFiles → 名称树 → FileSpec(UF: uaf_payload
 - 字节序列：**UTF-8，无 BOM**
 - MIME 类型建议：`text/csv`
 
-## 6. 视觉规范
+## 6. 视觉样式（非规范性参考）
 
-多卡片电子看板版式与分页规则见 [visual-spec.md](./visual-spec.md)。
+UAF 合规性不要求 PDF 遵循特定视觉样式。参考实现的视觉样式见 [visual-spec.md](./visual-spec.md)（非规范性参考）。
 
-视觉规范 additionally 包含：
-
-- **PDF 导出水印**：页面右下角固定位置须包含标识文本（如「使用 UAF 导出」），表明该 PDF 由 UAF 标准生成。详见 [visual-spec.md §7 PDF 导出水印](./visual-spec.md#7-pdf-导出水印)。
-- 水印是 v1.0 合规性检查的可选项，建议解析器在验证时给出提示。
+参考实现建议包含水印：页面右下角可包含标识文本（如「使用 UAF 导出」），表明该 PDF 由 UAF 标准生成。详见 [visual-spec.md §7 PDF 导出水印](./visual-spec.md#7-pdf-导出水印水印参考实现建议特征)。水印不是合规性要求。
 
 ## 7. 平台交换 Pipeline
 
@@ -84,12 +82,12 @@ Catalog → /Names → /EmbeddedFiles → 名称树 → FileSpec(UF: uaf_payload
 2. 后端解析器读取 PDF Catalog 的 `/EmbeddedFiles`，提取 `uaf_payload.csv`（**禁止 OCR**）
 3. 按 CSV 规范解析四字段，映射至平台本地作业模型
 
-参考实现的导出 Pipeline：
+参考实现的导出 Pipeline（其他实现方式同样合规）：
 
 1. 平台或 SDK 生成/接收非空 `UafDocument`
 2. 将全部 assignment 按顺序序列化为多行 CSV，并渲染为自包含 HTML 展示文件
-3. 使用浏览器打印管线将 HTML 转为一至多页 PDF
-4. 使用 `pdf-lib` 将同一份 `uaf_payload.csv` 嵌入 PDF 附件
+3. 使用浏览器打印管线或其他方式将 HTML 转为一至多页 PDF
+4. 使用 `pdf-lib` 或其他方式将同一份 `uaf_payload.csv` 嵌入 PDF 附件
 5. 对 HTML 与 PDF 分别执行 validate，确保二者可恢复同一 payload
 
 ## 8. 错误语义
