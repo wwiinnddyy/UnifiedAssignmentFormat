@@ -531,7 +531,7 @@ abstract final class UafPdf {
       }
     }
 
-    const watermark = '使用 UAF v1.0 导出';
+    const watermark = '本文件符合UAF标准规范';
     _appendText(
       builder,
       watermark,
@@ -872,7 +872,7 @@ final class _EmbeddedFont {
       }
     }
 
-    addText(' …使用 UAF v1.0 导出（续）年月日');
+    addText(' …本文件符合UAF标准规范（续）年月日');
     for (final assignment in document) {
       addText(assignment.subject);
       addText(assignment.date);

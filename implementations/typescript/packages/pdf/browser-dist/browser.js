@@ -56484,7 +56484,7 @@ function formatDate(date, mode) {
 }
 function drawPageBackground(page, font, canRenderCjk, colors) {
   page.drawRectangle({ x: 0, y: 0, width: PAGE_WIDTH, height: PAGE_HEIGHT, color: colors.pageBg });
-  const watermark = canRenderCjk ? "\u4F7F\u7528 UAF v1.0 \u5BFC\u51FA" : "Exported with UAF v1.0";
+  const watermark = canRenderCjk ? "\u672C\u6587\u4EF6\u7B26\u5408UAF\u6807\u51C6\u89C4\u8303" : "This document complies with UAF standard";
   page.drawText(watermark, {
     x: PAGE_WIDTH - PAGE_MARGIN - widthOf(font, watermark, WATERMARK_FONT),
     y: PAGE_MARGIN - 4,

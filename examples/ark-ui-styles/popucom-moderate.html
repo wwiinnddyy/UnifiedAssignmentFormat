@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-ark-theme="popucom" data-ark-depth="moderate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UAF 作业 — Popucom Moderate</title>
+<style>
+/* ── Ark UI: popucom + moderate ── */
+/* Palette: blue #3994ff, yellow #ffcc1a, orange #ffa800, off-white #fffdf4 */
+@page { size: A4 portrait; margin: 0; }
+@media print {
+  body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #fffdf4;
+  color: #141414;
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* ── Shell: dotted top bar + bright illustrated field ── */
+.shell-header {
+  background: #141414;
+  padding: 12pt 40pt;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+.shell-header::after {
+  content: "";
+  position: absolute;
+  bottom: -6pt;
+  left: 0;
+  right: 0;
+  height: 6pt;
+  background-image: radial-gradient(circle, #ffcc1a 2pt, transparent 2pt);
+  background-size: 12pt 6pt;
+}
+.shell-title {
+  font-size: 14pt;
+  font-weight: 800;
+  color: #ffcc1a;
+  letter-spacing: .02em;
+}
+.shell-badge {
+  background: #3994ff;
+  color: #fff;
+  font-size: 9pt;
+  font-weight: 700;
+  padding: 4pt 12pt;
+  border-radius: 9999pt;
+}
+
+/* ── Document grid ── */
+.document {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18pt;
+  padding: 32pt 40pt 64pt;
+}
+
+/* ── Card: rounded capsule, thick outline, offset shadow ── */
+.card {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  background: #fff;
+  border: 2.5pt solid #141414;
+  border-radius: 18pt;
+  box-shadow: 5pt 5pt 0 #141414;
+  padding: 22pt 22pt 18pt;
+  position: relative;
+}
+.card:nth-child(1) { border-color: #3994ff; box-shadow: 5pt 5pt 0 #3994ff; }
+.card:nth-child(2) { border-color: #ffa800; box-shadow: 5pt 5pt 0 #ffa800; }
+.card:nth-child(3) { border-color: #ffcc1a; box-shadow: 5pt 5pt 0 #ffcc1a; }
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10pt;
+  padding-bottom: 14pt;
+  border-bottom: 2pt dashed #e0ddd0;
+}
+.subject-pill {
+  display: inline-block;
+  font-size: 13pt;
+  font-weight: 800;
+  padding: 6pt 18pt;
+  border-radius: 9999pt;
+  color: #fff;
+}
+.card:nth-child(1) .subject-pill { background: #3994ff; }
+.card:nth-child(2) .subject-pill { background: #ffa800; }
+.card:nth-child(3) .subject-pill { background: #141414; }
+.date-pill {
+  display: inline-block;
+  background: #fffdf4;
+  color: #141414;
+  font-size: 10pt;
+  font-weight: 600;
+  padding: 5pt 12pt;
+  border: 2pt solid #141414;
+  border-radius: 9999pt;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Content ── */
+.content {
+  margin-top: 16pt;
+  color: #141414;
+  font-size: 18pt;
+  line-height: 1.55;
+  text-align: left;
+}
+
+/* ── Tags: colorful capsules ── */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7pt;
+  margin-top: 16pt;
+}
+.tag-chip {
+  display: inline-block;
+  font-size: 9pt;
+  font-weight: 700;
+  padding: 4pt 12pt;
+  border-radius: 9999pt;
+  border: 2pt solid #141414;
+}
+.tag-chip:nth-child(odd) { background: #ffcc1a; color: #141414; }
+.tag-chip:nth-child(even) { background: #fff; color: #141414; }
+
+/* ── Continuation ── */
+.continued { color: #999; font-size: 9pt; margin-top: 14pt; }
+
+/* ── Watermark (UAF compliance) ── */
+.watermark {
+  position: fixed;
+  right: 40pt;
+  bottom: 40pt;
+  color: #ccc;
+  font-size: 9pt;
+  font-weight: 600;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<!-- Shell -->
+<div class="shell-header">
+  <span class="shell-title">今日作业</span>
+  <span class="shell-badge">2026.05.19</span>
+</div>
+
+<!-- Cards -->
+<main class="document">
+  <article class="card">
+    <header class="header">
+      <span class="subject-pill">数学</span>
+      <span class="date-pill">5月19日</span>
+    </header>
+    <div class="content">完成课本第45页第1、2题，请拍照上传。</div>
+    <div class="tags"><span class="tag-chip">必做</span><span class="tag-chip">几何</span><span class="tag-chip">重难点</span></div>
+  </article>
+  <article class="card">
+    <header class="header">
+      <span class="subject-pill">语文</span>
+      <span class="date-pill">5月19日</span>
+    </header>
+    <div class="content">背诵《静夜思》，完成第二段仿写。</div>
+    <div class="tags"><span class="tag-chip">背诵</span></div>
+  </article>
+  <article class="card">
+    <header class="header">
+      <span class="subject-pill">英语</span>
+      <span class="date-pill">5月19日</span>
+    </header>
+    <div class="content">朗读课文 Unit 3 并完成练习册。</div>
+  </article>
+</main>
+
+<!-- UAF compliance watermark -->
+<div class="watermark">本文件符合UAF标准规范</div>
+
+<!-- UAF machine-readable payload -->
+<template id="uaf-payload-csv" data-filename="uaf_payload.csv">subject,date,content,tags
+数学,2026-05-19,完成课本第45页第1、2题，请拍照上传。,必做;几何;重难点
+语文,2026-05-19,背诵《静夜思》，完成第二段仿写。,背诵
+英语,2026-05-19,朗读课文 Unit 3 并完成练习册。,
+</template>
+</body>
+</html>

@@ -21,3 +21,4 @@ implementations/flutter/.packages
 implementations/flutter/build/
 implementations/flutter/doc/api/
 implementations/flutter/pubspec.lock
+/.npm-cache

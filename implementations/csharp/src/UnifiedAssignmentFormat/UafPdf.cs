@@ -191,7 +191,7 @@ public static class UafPdf
                 if (tagX > x + cardWidth - 30) break;
             }
         }
-        const string watermark = "使用 UAF v1.0 导出";
+        const string watermark = "本文件符合UAF标准规范";
         AppendText(builder, watermark, PageWidth - margin - EstimateTextWidth(watermark, 9), margin - 4, 9, "#94A3B8");
         return builder.ToString();
     }
@@ -289,7 +289,7 @@ public static class UafPdf
             tagY -= 29;
         }
 
-        const string watermark = "使用 UAF v1.0 导出";
+        const string watermark = "本文件符合UAF标准规范";
         AppendText(
             builder,
             watermark,

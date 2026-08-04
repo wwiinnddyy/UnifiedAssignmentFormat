@@ -31,7 +31,7 @@ body { background:#F8FAFC; color:#0F172A; font-family:"Noto Sans SC","Microsoft 
 .tags { display:flex; flex-wrap:wrap; gap:6pt; padding:0 14pt 14pt; }.tag { background:#E0E7FF;color:#3730A3;font-size:9.5pt;padding:4pt 8pt;border-radius:9999pt; }
 .continued { color:#64748B;font-size:9.5pt;padding:0 14pt 14pt; }.watermark { right:36pt;bottom:30pt;color:#94A3B8;font-size:9pt;opacity:.65; }
 </style></head><body><main class="document">{{string.Join("\n", cards)}}</main>
-<div class="watermark">使用 UAF v1.0 导出</div>
+<div class="watermark">本文件符合UAF标准规范</div>
 <template id="uaf-payload-csv" data-filename="uaf_payload.csv">{{csv}}</template></body></html>
 """;
     }

@@ -17,7 +17,7 @@ describe("renderUafHtml", () => {
     expect(html).toContain("max-width: 100%;");
     expect(html).toContain("overflow-wrap: anywhere;");
     expect(html.match(/<article class="card">/g)).toHaveLength(2);
-    expect(html).toContain("使用 UAF v1.0 导出");
+    expect(html).toContain("本文件符合UAF标准规范");
     expect(html).not.toMatch(/<link\b|<script\b|\bsrc\s*=/i);
   });
 

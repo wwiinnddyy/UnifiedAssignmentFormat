@@ -142,13 +142,13 @@ font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei",
   "Hiragino Sans GB", "WenQuanYi Micro Hei", sans-serif;
 ```
 
-## 4. 水印（参考实现建议特征）
+## 4. 水印
 
-参考实现中，页面右下角固定位置包含水印文本，与 [`visual-spec.md` §7](./visual-spec.md#7-pdf-导出水印水印参考实现建议特征) 对齐。水印不是 UAF 合规性要求。
+UAF 合规性要求 HTML 渲染输出须包含水印文本。
 
 | 属性 | 值 |
 |------|-----|
-| 文本 | `使用 UAF v1.0 导出`（或 `使用 UAF 导出`） |
+| 文本 | `本文件符合UAF标准规范` |
 | 字号 | `10pt` |
 | 字色 | `#94A3B8` |
 | 透明度 | `50%`（`opacity: 0.5`） |

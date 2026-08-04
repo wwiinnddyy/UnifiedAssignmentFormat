@@ -37,4 +37,7 @@ abstract final class UafConstants {
 
   /// Maximum number of tags allowed on one assignment.
   static const int tagMaxCount = 20;
+
+  /// The fixed watermark text required on every UAF PDF and HTML page.
+  static const String watermarkText = '本文件符合UAF标准规范';
 }

@@ -70,11 +70,11 @@ Catalog → /Names → /EmbeddedFiles → 名称树 → FileSpec(UF: uaf_payload
 - 字节序列：**UTF-8，无 BOM**
 - MIME 类型建议：`text/csv`
 
-## 6. 视觉样式（非规范性参考）
+## 6. 视觉样式
 
-UAF 合规性不要求 PDF 遵循特定视觉样式。参考实现的视觉样式见 [visual-spec.md](./visual-spec.md)（非规范性参考）。
+UAF 标准不限制 PDF 的颜色、字体、布局等视觉样式。参考实现的视觉风格见 [visual-spec.md](./visual-spec.md)（非规范性参考）。
 
-参考实现建议包含水印：页面右下角可包含标识文本（如「使用 UAF 导出」），表明该 PDF 由 UAF 标准生成。详见 [visual-spec.md §7 PDF 导出水印](./visual-spec.md#7-pdf-导出水印水印参考实现建议特征)。水印不是合规性要求。
+UAF 合规性要求 PDF 和 HTML 每页须包含水印文本「本文件符合UAF标准规范」。详见 [visual-spec.md §7](./visual-spec.md#7-pdf-导出水印)。
 
 ## 7. 平台交换 Pipeline
 

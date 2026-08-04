@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-ark-theme="corporate" data-ark-depth="minimal">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UAF 作业 — Corporate Minimal</title>
+<style>
+/* ── Ark UI: corporate + minimal ── */
+/* Palette: black/charcoal #050505, white #f3f3f3, acid lime #f3ff00 */
+@page { size: A4 portrait; margin: 0; }
+@media print {
+  body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #f3f3f3;
+  color: #050505;
+  font-family: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* ── Shell: translucent dark top bar ── */
+.shell-header {
+  background: rgba(5, 5, 5, 0.92);
+  color: #f3f3f3;
+  padding: 14pt 40pt;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.shell-title {
+  font-size: 11pt;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.shell-date {
+  font-size: 10pt;
+  color: #999;
+  font-variant-numeric: tabular-nums;
+}
+.shell-accent {
+  height: 2pt;
+  background: #f3ff00;
+}
+
+/* ── Document grid ── */
+.document {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16pt;
+  padding: 28pt 40pt 60pt;
+}
+
+/* ── Card: clean rectangle, 0 radius, light shadow ── */
+.card {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 0;
+  box-shadow: 0 1pt 4pt rgba(0, 0, 0, 0.06);
+  padding: 22pt 24pt;
+}
+.card:hover { border-color: #f3ff00; }
+
+/* ── Header: monochrome pills ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10pt;
+  padding-bottom: 14pt;
+  border-bottom: 1px solid #e0e0e0;
+}
+.subject-pill {
+  display: inline-block;
+  background: #050505;
+  color: #f3f3f3;
+  font-size: 12pt;
+  font-weight: 600;
+  padding: 6pt 16pt;
+  border-radius: 0;
+  letter-spacing: .04em;
+}
+.date-pill {
+  display: inline-block;
+  background: transparent;
+  color: #666;
+  font-size: 10pt;
+  padding: 4pt 10pt;
+  border: 1px solid #ddd;
+  border-radius: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Content ── */
+.content {
+  margin-top: 16pt;
+  color: #050505;
+  font-size: 18pt;
+  line-height: 1.6;
+  text-align: left;
+}
+
+/* ── Tags: lime accent ── */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6pt;
+  margin-top: 16pt;
+}
+.tag-chip {
+  display: inline-block;
+  background: transparent;
+  color: #050505;
+  font-size: 9pt;
+  padding: 3pt 10pt;
+  border: 1px solid #050505;
+  border-radius: 0;
+  letter-spacing: .04em;
+}
+.tag-chip::before {
+  content: "";
+  display: inline-block;
+  width: 5pt;
+  height: 5pt;
+  background: #f3ff00;
+  margin-right: 5pt;
+  vertical-align: middle;
+}
+
+/* ── Continuation ── */
+.continued { color: #999; font-size: 9pt; margin-top: 14pt; }
+
+/* ── Watermark (UAF compliance) ── */
+.watermark {
+  position: fixed;
+  right: 40pt;
+  bottom: 40pt;
+  color: #bbb;
+  font-size: 9pt;
+  letter-spacing: .06em;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<!-- Shell -->
+<div class="shell-header">
+  <span class="shell-title">Homework · 作业看板</span>
+  <span class="shell-date">2026-05-19</span>
+</div>
+<div class="shell-accent"></div>
+
+<!-- Cards -->
+<main class="document">
+  <article class="card">
+    <header class="header">
+      <span class="subject-pill">数学</span>
+      <span class="date-pill">2026年5月19日</span>
+    </header>
+    <div class="content">完成课本第45页第1、2题，请拍照上传。</div>
+    <div class="tags"><span class="tag-chip">必做</span><span class="tag-chip">几何</span><span class="tag-chip">重难点</span></div>
+  </article>
+  <article class="card">
+    <header class="header">
+      <span class="subject-pill">语文</span>
+      <span class="date-pill">2026年5月19日</span>
+    </header>
+    <div class="content">背诵《静夜思》，完成第二段仿写。</div>
+    <div class="tags"><span class="tag-chip">背诵</span></div>
+  </article>
+  <article class="card">
+    <header class="header">
+      <span class="subject-pill">英语</span>
+      <span class="date-pill">2026年5月19日</span>
+    </header>
+    <div class="content">朗读课文 Unit 3 并完成练习册。</div>
+  </article>
+</main>
+
+<!-- UAF compliance watermark -->
+<div class="watermark">本文件符合UAF标准规范</div>
+
+<!-- UAF machine-readable payload -->
+<template id="uaf-payload-csv" data-filename="uaf_payload.csv">subject,date,content,tags
+数学,2026-05-19,完成课本第45页第1、2题，请拍照上传。,必做;几何;重难点
+语文,2026-05-19,背诵《静夜思》，完成第二段仿写。,背诵
+英语,2026-05-19,朗读课文 Unit 3 并完成练习册。,
+</template>
+</body>
+</html>

@@ -24,7 +24,7 @@ interface HarfBuzzExports {
 }
 
 export function collectDocumentText(document: UafDocument): string {
-  const parts = ["使用 UAF v1.0 导出正文下页继续（续）年月日"];
+  const parts = ["本文件符合UAF标准规范正文下页继续（续）年月日"];
   for (const assignment of document) {
     parts.push(assignment.subject, assignment.date, assignment.content, ...assignment.tags);
   }

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-ark-theme="ark" data-ark-depth="complex">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UAF 作业 — Ark Complex</title>
+<style>
+/* ── Ark UI: ark + complex ── */
+/* Palette: near-black #080a0b, white #f4f6f6, cyan #18d1ff, acid green #c8eb21 */
+@page { size: A4 portrait; margin: 0; }
+@media print {
+  body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #080a0b;
+  color: #f4f6f6;
+  font-family: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", sans-serif;
+}
+
+/* ── Shell: black top bar + edge utilities + metadata baseline ── */
+.shell-top {
+  background: #080a0b;
+  border-bottom: 1px solid rgba(244, 246, 246, 0.12);
+  padding: 10pt 40pt;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.shell-index {
+  font-size: 8pt;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(244, 246, 246, 0.4);
+  font-family: "Space Grotesk", "IBM Plex Sans", system-ui, sans-serif;
+}
+.shell-index span { color: #18d1ff; }
+.shell-status {
+  display: flex;
+  align-items: center;
+  gap: 8pt;
+  font-size: 8pt;
+  color: rgba(244, 246, 246, 0.5);
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.shell-dot {
+  width: 5pt;
+  height: 5pt;
+  background: #18d1ff;
+  border-radius: 0;
+}
+
+/* ── Section title system ── */
+.section-title {
+  padding: 18pt 40pt 10pt;
+  display: flex;
+  align-items: baseline;
+  gap: 14pt;
+}
+.section-title h1 {
+  font-size: 28pt;
+  font-weight: 800;
+  letter-spacing: -.04em;
+  line-height: .9;
+  color: #f4f6f6;
+}
+.section-title .section-sub {
+  font-size: 8pt;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(244, 246, 246, 0.35);
+  font-family: "Space Grotesk", system-ui, sans-serif;
+}
+.section-title .section-rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(24, 209, 255, 0.5), transparent);
+}
+
+/* ── Document grid ── */
+.document {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14pt;
+  padding: 0 40pt 64pt;
+}
+
+/* ── Card: technical panel, flat, one strong edge ── */
+.card {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  background: rgba(244, 246, 246, 0.04);
+  border: 1px solid rgba(244, 246, 246, 0.1);
+  border-left: 2px solid #18d1ff;
+  border-radius: 0;
+  padding: 20pt 22pt;
+  position: relative;
+}
+.card::before {
+  content: attr(data-index);
+  position: absolute;
+  top: 8pt;
+  right: 10pt;
+  font-size: 7pt;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  color: rgba(24, 209, 255, 0.4);
+  letter-spacing: .1em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10pt;
+  padding-bottom: 12pt;
+  border-bottom: 1px solid rgba(244, 246, 246, 0.08);
+}
+.subject-pill {
+  display: inline-block;
+  background: transparent;
+  color: #18d1ff;
+  font-size: 13pt;
+  font-weight: 700;
+  padding: 4pt 14pt;
+  border: 1px solid #18d1ff;
+  border-radius: 0;
+  letter-spacing: .04em;
+  position: relative;
+}
+.subject-pill::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: #18d1ff;
+}
+.date-pill {
+  display: inline-block;
+  color: rgba(244, 246, 246, 0.45);
+  font-size: 9pt;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .06em;
+}
+
+/* ── Content ── */
+.content {
+  margin-top: 14pt;
+  color: #f4f6f6;
+  font-size: 17pt;
+  line-height: 1.55;
+  text-align: left;
+}
+
+/* ── Tags: cyan signal chips ── */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6pt;
+  margin-top: 14pt;
+}
+.tag-chip {
+  display: inline-block;
+  background: rgba(24, 209, 255, 0.08);
+  color: #18d1ff;
+  font-size: 8pt;
+  font-weight: 600;
+  padding: 3pt 10pt;
+  border: 1px solid rgba(24, 209, 255, 0.25);
+  border-radius: 0;
+  letter-spacing: .06em;
+  font-family: "Space Grotesk", "Noto Sans SC", system-ui, sans-serif;
+}
+
+/* ── Status strip (bottom metadata) ── */
+.status-strip {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #080a0b;
+  border-top: 1px solid rgba(244, 246, 246, 0.08);
+  padding: 6pt 40pt;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 7pt;
+  color: rgba(244, 246, 246, 0.3);
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  letter-spacing: .08em;
+}
+.status-strip .active { color: #18d1ff; }
+
+/* ── Watermark (UAF compliance) ── */
+.watermark {
+  position: fixed;
+  right: 40pt;
+  bottom: 24pt;
+  color: rgba(24, 209, 255, 0.18);
+  font-size: 8pt;
+  letter-spacing: .12em;
+  font-family: "Noto Sans SC", sans-serif;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<!-- Shell: top bar -->
+<div class="shell-top">
+  <span class="shell-index"><span>UAF</span> / HOMEWORK / 2026-05-19</span>
+  <span class="shell-status"><span class="shell-dot"></span> ACTIVE · 3 RECORDS</span>
+</div>
+
+<!-- Section title -->
+<div class="section-title">
+  <h1>作业看板</h1>
+  <span class="section-sub">ASSIGNMENT BOARD</span>
+  <span class="section-rule"></span>
+</div>
+
+<!-- Cards -->
+<main class="document">
+  <article class="card" data-index="01 / MATH">
+    <header class="header">
+      <span class="subject-pill">数学</span>
+      <span class="date-pill">2026.05.19</span>
+    </header>
+    <div class="content">完成课本第45页第1、2题，请拍照上传。</div>
+    <div class="tags"><span class="tag-chip">必做</span><span class="tag-chip">几何</span><span class="tag-chip">重难点</span></div>
+  </article>
+  <article class="card" data-index="02 / CHN">
+    <header class="header">
+      <span class="subject-pill">语文</span>
+      <span class="date-pill">2026.05.19</span>
+    </header>
+    <div class="content">背诵《静夜思》，完成第二段仿写。</div>
+    <div class="tags"><span class="tag-chip">背诵</span></div>
+  </article>
+  <article class="card" data-index="03 / ENG">
+    <header class="header">
+      <span class="subject-pill">英语</span>
+      <span class="date-pill">2026.05.19</span>
+    </header>
+    <div class="content">朗读课文 Unit 3 并完成练习册。</div>
+  </article>
+</main>
+
+<!-- Status strip -->
+<div class="status-strip">
+  <span>UAF v1.0 · <span class="active">3</span> ASSIGNMENTS</span>
+  <span>PAYLOAD: uaf_payload.csv</span>
+</div>
+
+<!-- UAF compliance watermark -->
+<div class="watermark">本文件符合UAF标准规范</div>
+
+<!-- UAF machine-readable payload -->
+<template id="uaf-payload-csv" data-filename="uaf_payload.csv">subject,date,content,tags
+数学,2026-05-19,完成课本第45页第1、2题，请拍照上传。,必做;几何;重难点
+语文,2026-05-19,背诵《静夜思》，完成第二段仿写。,背诵
+英语,2026-05-19,朗读课文 Unit 3 并完成练习册。,
+</template>
+</body>
+</html>

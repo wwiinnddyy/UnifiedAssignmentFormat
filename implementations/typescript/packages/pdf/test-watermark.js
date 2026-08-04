@@ -7,7 +7,7 @@ const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
 const bg = rgb(20 / 255, 18 / 255, 24 / 255);
 const watermarkColor = rgb(188 / 255, 184 / 255, 188 / 255);
-const text = "Exported with UAF v1.0";
+const text = "This document complies with UAF standard";
 const size = 9;
 const width = font.widthOfTextAtSize(text, size);
 

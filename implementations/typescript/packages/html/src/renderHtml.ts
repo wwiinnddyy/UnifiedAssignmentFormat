@@ -240,7 +240,7 @@ body {
 </head>
 <body>
 <main class="document">${cards.join("\n")}</main>
-<div class="watermark">使用 UAF v1.0 导出</div>
+<div class="watermark">本文件符合UAF标准规范</div>
 <template id="uaf-payload-csv" data-filename="uaf_payload.csv">${payloadCsv}</template>
 </body>
 </html>`;

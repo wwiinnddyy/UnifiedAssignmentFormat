@@ -144,7 +144,7 @@ function drawPageBackground(
   colors: ColorPalette,
 ): void {
   page.drawRectangle({ x: 0, y: 0, width: PAGE_WIDTH, height: PAGE_HEIGHT, color: colors.pageBg });
-  const watermark = canRenderCjk ? "使用 UAF v1.0 导出" : "Exported with UAF v1.0";
+  const watermark = canRenderCjk ? "本文件符合UAF标准规范" : "This document complies with UAF standard";
   page.drawText(watermark, {
     x: PAGE_WIDTH - PAGE_MARGIN - widthOf(font, watermark, WATERMARK_FONT),
     y: PAGE_MARGIN - 4,

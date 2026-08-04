@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-ark-theme="endfield" data-ark-depth="moderate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UAF 作业 — Endfield Moderate</title>
+<style>
+/* ── Ark UI: endfield + moderate ── */
+/* Palette: charcoal #191919, off-white #f2f2f0, signal yellow #fffa00, green #00ffa2 */
+@page { size: A4 portrait; margin: 0; }
+@media print {
+  body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #f2f2f0;
+  color: #191919;
+  font-family: "Noto Sans SC", "Source Han Sans SC", "PingFang SC", sans-serif;
+}
+
+/* ── Shell: pale vertical rail + segmented field ── */
+.shell-layout {
+  display: flex;
+  min-height: 100vh;
+}
+.shell-rail {
+  width: 56pt;
+  background: #191919;
+  color: #f2f2f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20pt 0;
+  gap: 24pt;
+  flex-shrink: 0;
+}
+.rail-icon {
+  width: 24pt;
+  height: 24pt;
+  border: 1px solid rgba(242, 242, 240, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8pt;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  color: rgba(242, 242, 240, 0.5);
+  font-variant-numeric: tabular-nums;
+}
+.rail-icon.active {
+  border-color: #fffa00;
+  color: #fffa00;
+}
+.rail-number {
+  font-size: 32pt;
+  font-weight: 800;
+  color: rgba(242, 242, 240, 0.06);
+  font-family: "Arial Narrow", "Roboto Condensed", sans-serif;
+  letter-spacing: -.04em;
+  writing-mode: vertical-rl;
+}
+
+/* ── Main content area ── */
+.shell-main {
+  flex: 1;
+  padding: 0;
+}
+
+/* ── Section header with large numeral ── */
+.section-header {
+  padding: 24pt 40pt 16pt;
+  display: flex;
+  align-items: flex-end;
+  gap: 16pt;
+  border-bottom: 2px solid #191919;
+}
+.section-number {
+  font-size: 52pt;
+  font-weight: 900;
+  line-height: .8;
+  color: #191919;
+  font-family: "Arial Narrow", "Roboto Condensed", "DIN Condensed", sans-serif;
+  letter-spacing: -.04em;
+}
+.section-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3pt;
+  padding-bottom: 6pt;
+}
+.section-label {
+  font-size: 14pt;
+  font-weight: 700;
+  color: #191919;
+}
+.section-code {
+  font-size: 8pt;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(25, 25, 25, 0.4);
+  font-family: "Space Grotesk", system-ui, sans-serif;
+}
+
+/* ── Document grid ── */
+.document {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16pt;
+  padding: 22pt 40pt 64pt;
+}
+
+/* ── Card: rectangular tile, clipped wedge ── */
+.card {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  background: #fff;
+  border: 1px solid #191919;
+  border-radius: 0;
+  padding: 20pt 22pt;
+  position: relative;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4pt;
+  height: 100%;
+  background: #fffa00;
+}
+
+/* ── Header with guide line ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10pt;
+  padding-bottom: 12pt;
+  border-bottom: 1px solid rgba(25, 25, 25, 0.15);
+  margin-left: 8pt;
+}
+.subject-pill {
+  display: inline-block;
+  background: #191919;
+  color: #f2f2f0;
+  font-size: 12pt;
+  font-weight: 700;
+  padding: 5pt 16pt;
+  border-radius: 0;
+  letter-spacing: .04em;
+}
+.date-pill {
+  display: inline-block;
+  color: #191919;
+  font-size: 9pt;
+  font-family: "Space Grotesk", "IBM Plex Sans", system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .06em;
+}
+
+/* ── Content ── */
+.content {
+  margin-top: 14pt;
+  margin-left: 8pt;
+  color: #191919;
+  font-size: 17pt;
+  line-height: 1.55;
+  text-align: left;
+}
+
+/* ── Tags: field code style ── */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6pt;
+  margin-top: 14pt;
+  margin-left: 8pt;
+}
+.tag-chip {
+  display: inline-block;
+  background: #f2f2f0;
+  color: #191919;
+  font-size: 8pt;
+  font-weight: 600;
+  padding: 3pt 10pt;
+  border: 1px solid rgba(25, 25, 25, 0.2);
+  border-radius: 0;
+  letter-spacing: .06em;
+  font-family: "Space Grotesk", "Noto Sans SC", system-ui, sans-serif;
+}
+.tag-chip:first-child {
+  background: #fffa00;
+  border-color: #191919;
+  font-weight: 700;
+}
+
+/* ── Calibration labels ── */
+.calibration {
+  position: fixed;
+  right: 12pt;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 6pt;
+  color: rgba(25, 25, 25, 0.15);
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  letter-spacing: .1em;
+  writing-mode: vertical-rl;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Watermark (UAF compliance) ── */
+.watermark {
+  position: fixed;
+  right: 40pt;
+  bottom: 40pt;
+  color: rgba(25, 25, 25, 0.15);
+  font-size: 9pt;
+  letter-spacing: .06em;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<div class="shell-layout">
+  <!-- Shell: vertical rail -->
+  <nav class="shell-rail">
+    <div class="rail-number">0519</div>
+    <div class="rail-icon active">作</div>
+    <div class="rail-icon">01</div>
+    <div class="rail-icon">02</div>
+    <div class="rail-icon">03</div>
+  </nav>
+
+  <!-- Main content -->
+  <div class="shell-main">
+    <!-- Section header -->
+    <div class="section-header">
+      <span class="section-number">19</span>
+      <div class="section-meta">
+        <span class="section-label">五月作业</span>
+        <span class="section-code">MAY 2026 · FIELD REPORT</span>
+      </div>
+    </div>
+
+    <!-- Cards -->
+    <main class="document">
+      <article class="card">
+        <header class="header">
+          <span class="subject-pill">数学</span>
+          <span class="date-pill">2026.05.19</span>
+        </header>
+        <div class="content">完成课本第45页第1、2题，请拍照上传。</div>
+        <div class="tags"><span class="tag-chip">必做</span><span class="tag-chip">几何</span><span class="tag-chip">重难点</span></div>
+      </article>
+      <article class="card">
+        <header class="header">
+          <span class="subject-pill">语文</span>
+          <span class="date-pill">2026.05.19</span>
+        </header>
+        <div class="content">背诵《静夜思》，完成第二段仿写。</div>
+        <div class="tags"><span class="tag-chip">背诵</span></div>
+      </article>
+      <article class="card">
+        <header class="header">
+          <span class="subject-pill">英语</span>
+          <span class="date-pill">2026.05.19</span>
+        </header>
+        <div class="content">朗读课文 Unit 3 并完成练习册。</div>
+      </article>
+    </main>
+  </div>
+</div>
+
+<!-- Calibration label -->
+<div class="calibration">UAF-1.0 · A4-PORTRAIT · 2026-05-19</div>
+
+<!-- UAF compliance watermark -->
+<div class="watermark">本文件符合UAF标准规范</div>
+
+<!-- UAF machine-readable payload -->
+<template id="uaf-payload-csv" data-filename="uaf_payload.csv">subject,date,content,tags
+数学,2026-05-19,完成课本第45页第1、2题，请拍照上传。,必做;几何;重难点
+语文,2026-05-19,背诵《静夜思》，完成第二段仿写。,背诵
+英语,2026-05-19,朗读课文 Unit 3 并完成练习册。,
+</template>
+</body>
+</html>

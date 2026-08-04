@@ -196,7 +196,7 @@ body {
 </head>
 <body>
 <main class="document">${cards.join('\n')}</main>
-<div class="watermark">使用 UAF v1.0 导出</div>
+<div class="watermark">本文件符合UAF标准规范</div>
 <template id="uaf-payload-csv" data-filename="${UafConstants.payloadFileName}">$payloadCsv</template>
 </body>
 </html>''';
@@ -743,7 +743,7 @@ body {
   );
   static final RegExp _canonicalBodyPattern = RegExp(
     r'<body\s*>\s*<main\s+class="document"\s*>([\s\S]*?)</main>\s*'
-    r'<div\s+class="watermark"\s*>\s*使用\s+UAF(?:\s+v1\.0)?\s+导出\s*'
+    r'<div\s+class="watermark"\s*>\s*本文件符合UAF标准规范\s*'
     r'</div>\s*<template\s+id="uaf-payload-csv"\s+'
     r'data-filename="uaf_payload\.csv"\s*>[\s\S]*?</template>\s*</body>',
     caseSensitive: false,
@@ -771,7 +771,7 @@ body {
     caseSensitive: false,
   );
   static final RegExp _watermarkContentPattern = RegExp(
-    r'^\s*使用\s+UAF(?:\s+v1\.0)?\s+导出\s*$',
+    r'^\s*本文件符合UAF标准规范\s*$',
     caseSensitive: false,
   );
   static final RegExp _classAttributePattern = RegExp(

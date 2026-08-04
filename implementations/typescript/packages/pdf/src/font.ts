@@ -13,7 +13,7 @@ const subsetCache = new Map<string, Uint8Array>();
 
 /** Characters used when rendering a homework card (for font subsetting). */
 export function collectPdfText(document: UafDocument, dateDisplay: "zh" | "iso" = "zh"): string {
-  const parts = ["使用 UAF v1.0 导出未标记正文下页继续（续）"];
+  const parts = ["本文件符合UAF标准规范未标记正文下页继续（续）"];
   for (const assignment of document) {
     parts.push(assignment.subject, assignment.content, ...assignment.tags);
   }
@@ -68,7 +68,7 @@ export async function loadChineseFontForText(text: string): Promise<Uint8Array> 
 
 /** @deprecated Use loadChineseFontForText with collectPdfText. */
 export async function loadChineseFont(): Promise<Uint8Array> {
-  return loadChineseFontForText("使用 UAF 导出");
+  return loadChineseFontForText("本文件符合UAF标准规范");
 }
 
 export function getFontPath(): string {

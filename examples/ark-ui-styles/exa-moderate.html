@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-ark-theme="exa" data-ark-depth="moderate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UAF 作业 — Ex Astris Moderate</title>
+<style>
+/* ── Ark UI: exa + moderate ── */
+/* Palette: midnight blue-black #080914, white #f3f2ef, aqua #46f6e6, violet #925dff */
+@page { size: A4 portrait; margin: 0; }
+@media print {
+  body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #080914;
+  color: #f3f2ef;
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Noto Sans SC", serif;
+}
+
+/* ── Shell: immersive + slim left navigation ── */
+.shell-top {
+  padding: 16pt 40pt;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(70, 246, 230, 0.08);
+}
+.shell-title {
+  font-size: 10pt;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(243, 242, 239, 0.4);
+  font-family: "Noto Sans SC", sans-serif;
+}
+.shell-title em {
+  font-style: normal;
+  color: #46f6e6;
+}
+.shell-coord {
+  font-size: 8pt;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  color: rgba(243, 242, 239, 0.25);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .08em;
+}
+
+/* ── Archive header: large serif display ── */
+.archive-header {
+  padding: 28pt 40pt 20pt;
+  position: relative;
+}
+.archive-header::before {
+  content: "";
+  position: absolute;
+  left: 40pt;
+  top: 0;
+  width: 60pt;
+  height: 60pt;
+  border: 1px solid rgba(70, 246, 230, 0.12);
+  border-radius: 50%;
+}
+.archive-header::after {
+  content: "";
+  position: absolute;
+  left: 50pt;
+  top: 10pt;
+  width: 40pt;
+  height: 40pt;
+  border: 1px solid rgba(146, 93, 255, 0.1);
+  border-radius: 50%;
+}
+.archive-title {
+  font-size: 32pt;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: .9;
+  color: #f3f2ef;
+  font-family: "Noto Serif SC", "Source Han Serif SC", serif;
+}
+.archive-sub {
+  margin-top: 8pt;
+  font-size: 9pt;
+  color: rgba(243, 242, 239, 0.35);
+  letter-spacing: .1em;
+  font-family: "Noto Sans SC", sans-serif;
+}
+.archive-rule {
+  margin-top: 16pt;
+  height: 1px;
+  background: linear-gradient(90deg, #46f6e6, rgba(70, 246, 230, 0.05) 60%, transparent);
+}
+
+/* ── Document grid ── */
+.document {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16pt;
+  padding: 0 40pt 64pt;
+}
+
+/* ── Card: archival panel, orbital ring ── */
+.card {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  background: rgba(243, 242, 239, 0.03);
+  border: 1px solid rgba(243, 242, 239, 0.08);
+  border-radius: 2pt;
+  padding: 22pt 24pt;
+  position: relative;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  top: -1pt;
+  left: 20pt;
+  right: 20pt;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #46f6e6, transparent);
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10pt;
+  padding-bottom: 14pt;
+  border-bottom: 1px solid rgba(243, 242, 239, 0.06);
+}
+.subject-pill {
+  display: inline-block;
+  background: transparent;
+  color: #46f6e6;
+  font-size: 14pt;
+  font-weight: 700;
+  padding: 4pt 0;
+  border-bottom: 1px solid rgba(70, 246, 230, 0.3);
+  font-family: "Noto Serif SC", "Source Han Serif SC", serif;
+  letter-spacing: .06em;
+}
+.date-pill {
+  display: inline-block;
+  color: rgba(243, 242, 239, 0.35);
+  font-size: 8pt;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .1em;
+}
+
+/* ── Content ── */
+.content {
+  margin-top: 14pt;
+  color: #f3f2ef;
+  font-size: 17pt;
+  line-height: 1.65;
+  text-align: left;
+  font-family: "Noto Serif SC", "Source Han Serif SC", serif;
+}
+
+/* ── Tags: orbital capsules ── */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8pt;
+  margin-top: 16pt;
+}
+.tag-chip {
+  display: inline-block;
+  background: transparent;
+  color: rgba(243, 242, 239, 0.6);
+  font-size: 8pt;
+  padding: 3pt 12pt;
+  border: 1px solid rgba(70, 246, 230, 0.15);
+  border-radius: 9999pt;
+  letter-spacing: .06em;
+  font-family: "Noto Sans SC", sans-serif;
+}
+.tag-chip:first-child {
+  border-color: rgba(70, 246, 230, 0.4);
+  color: #46f6e6;
+}
+
+/* ── Star-chart decoration ── */
+.star-field {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 200pt;
+  height: 200pt;
+  pointer-events: none;
+  opacity: 0.06;
+}
+.star {
+  position: absolute;
+  width: 2pt;
+  height: 2pt;
+  background: #46f6e6;
+  border-radius: 50%;
+}
+.star:nth-child(1) { top: 30pt; right: 60pt; }
+.star:nth-child(2) { top: 55pt; right: 120pt; width: 3pt; height: 3pt; }
+.star:nth-child(3) { top: 80pt; right: 40pt; }
+.star:nth-child(4) { top: 110pt; right: 90pt; width: 1pt; height: 1pt; }
+.star:nth-child(5) { top: 140pt; right: 150pt; }
+.star:nth-child(6) { top: 45pt; right: 170pt; width: 1pt; height: 1pt; }
+.star-line {
+  position: absolute;
+  top: 55pt;
+  right: 40pt;
+  width: 80pt;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(70, 246, 230, 0.5), transparent);
+  transform: rotate(25deg);
+}
+
+/* ── Watermark (UAF compliance) ── */
+.watermark {
+  position: fixed;
+  right: 40pt;
+  bottom: 40pt;
+  color: rgba(70, 246, 230, 0.12);
+  font-size: 9pt;
+  letter-spacing: .1em;
+  font-family: "Noto Sans SC", sans-serif;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<!-- Star-chart decoration -->
+<div class="star-field">
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star-line"></div>
+</div>
+
+<!-- Shell -->
+<div class="shell-top">
+  <span class="shell-title"><em>Ex Astris</em> · 作业档案</span>
+  <span class="shell-coord">SEC 05-19 · ENTRY 2026</span>
+</div>
+
+<!-- Archive header -->
+<div class="archive-header">
+  <h1 class="archive-title">五月十九日<br>作业记录</h1>
+  <p class="archive-sub">ASSIGNMENT ARCHIVE · MAY 19, 2026</p>
+  <div class="archive-rule"></div>
+</div>
+
+<!-- Cards -->
+<main class="document">
+  <article class="card">
+    <header class="header">
+      <span class="subject-pill">数学</span>
+      <span class="date-pill">2026.05.19</span>
+    </header>
+    <div class="content">完成课本第45页第1、2题，请拍照上传。</div>
+    <div class="tags"><span class="tag-chip">必做</span><span class="tag-chip">几何</span><span class="tag-chip">重难点</span></div>
+  </article>
+  <article class="card">
+    <header class="header">
+      <span class="subject-pill">语文</span>
+      <span class="date-pill">2026.05.19</span>
+    </header>
+    <div class="content">背诵《静夜思》，完成第二段仿写。</div>
+    <div class="tags"><span class="tag-chip">背诵</span></div>
+  </article>
+  <article class="card">
+    <header class="header">
+      <span class="subject-pill">英语</span>
+      <span class="date-pill">2026.05.19</span>
+    </header>
+    <div class="content">朗读课文 Unit 3 并完成练习册。</div>
+  </article>
+</main>
+
+<!-- UAF compliance watermark -->
+<div class="watermark">本文件符合UAF标准规范</div>
+
+<!-- UAF machine-readable payload -->
+<template id="uaf-payload-csv" data-filename="uaf_payload.csv">subject,date,content,tags
+数学,2026-05-19,完成课本第45页第1、2题，请拍照上传。,必做;几何;重难点
+语文,2026-05-19,背诵《静夜思》，完成第二段仿写。,背诵
+英语,2026-05-19,朗读课文 Unit 3 并完成练习册。,
+</template>
+</body>
+</html>

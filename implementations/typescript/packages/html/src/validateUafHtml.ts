@@ -45,6 +45,9 @@ function validatePrintableStructure(html: string): string[] {
   if (!/@page\b/i.test(html)) {
     errors.push("HTML must define @page print CSS");
   }
+  if (!/<div\s+class="watermark"\s*>\s*本文件符合UAF标准规范\s*<\/div>/i.test(html)) {
+    errors.push("HTML must contain the required UAF compliance watermark");
+  }
   if (
     !/<template\b(?=[^>]*\bid=(["'])uaf-payload-csv\1)(?=[^>]*\bdata-filename=(["'])uaf_payload\.csv\2)[^>]*>/i.test(
       html,
